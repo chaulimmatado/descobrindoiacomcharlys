@@ -168,8 +168,6 @@
             font-size: 1.05em;
         }
         
-        /* REMOVIDO: nada fica opaco ou embaçado */
-        
         .ai-tool {
             background: linear-gradient(145deg, #1a3a4a, #1e4a5a);
             padding: 20px;
@@ -212,6 +210,34 @@
             border-top: 1px solid #3a3a5c;
         }
         
+        /* BADGE EM DESENVOLVIMENTO */
+        .dev-badge {
+            display: inline-block;
+            background: linear-gradient(145deg, #1a4a2a, #2a5a3a);
+            color: #00ff88;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 15px;
+            letter-spacing: 3px;
+            border: 2px solid #00ff88;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.4), inset 0 0 10px rgba(0, 255, 136, 0.1);
+            animation: pulse 2s infinite;
+            text-transform: uppercase;
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(0, 255, 136, 0.4), inset 0 0 10px rgba(0, 255, 136, 0.1);
+                transform: scale(1);
+            }
+            50% {
+                box-shadow: 0 0 35px rgba(0, 255, 136, 0.8), inset 0 0 20px rgba(0, 255, 136, 0.2);
+                transform: scale(1.05);
+            }
+        }
+        
         code {
             background: rgba(0, 212, 255, 0.1);
             padding: 2px 8px;
@@ -220,7 +246,6 @@
             font-family: 'Courier New', monospace;
         }
         
-        /* Overlay escuro apenas no fundo */
         .overlay {
             position: fixed;
             top: 0;
@@ -254,6 +279,12 @@
             
             .step:hover, .step.active {
                 transform: scale(1.1) translateX(5px);
+            }
+            
+            .dev-badge {
+                font-size: 0.9em;
+                padding: 8px 18px;
+                letter-spacing: 2px;
             }
         }
     </style>
@@ -333,6 +364,7 @@
         <footer>
             <p>Criado em Maio de 2026 com ajuda de Inteligência Artificial</p>
             <p style="margin-top: 8px; color: #00d4ff;">🎮 Estilo Dark Empresarial + Gamer</p>
+            <div class="dev-badge">🔧 EM DESENVOLVIMENTO</div>
         </footer>
     </div>
 
