@@ -5,78 +5,263 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Como Fiz Meu Site com IA</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             line-height: 1.6;
-            max-width: 800px;
-            margin: 0 auto;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            min-height: 100vh;
             padding: 20px;
-            background-color: #f5f5f5;
+            color: #e0e0e0;
         }
+        
         .container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            max-width: 900px;
+            margin: 0 auto;
+            background: rgba(30, 30, 40, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+            border: 1px solid #3a3a5c;
         }
+        
         h1 {
-            color: #2c3e50;
+            color: #00d4ff;
             text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+            letter-spacing: 2px;
         }
+        
+        .subtitle {
+            text-align: center;
+            color: #a0a0b0;
+            margin-bottom: 40px;
+            font-size: 1.1em;
+        }
+        
         h2 {
-            color: #3498db;
+            color: #ff6b9d;
+            margin: 30px 0 20px 0;
+            font-size: 1.8em;
+            border-bottom: 2px solid #ff6b9d;
+            padding-bottom: 10px;
         }
+        
+        .step-container {
+            margin: 20px 0;
+        }
+        
         .step {
-            background-color: #ecf0f1;
-            padding: 15px;
+            background: linear-gradient(145deg, #1e1e2e, #25253a);
+            padding: 20px;
             margin: 15px 0;
-            border-radius: 5px;
-            border-left: 4px solid #3498db;
+            border-radius: 10px;
+            border-left: 4px solid #00d4ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        .ai-tool {
-            background-color: #e8f4f8;
-            padding: 10px;
+        
+        .step::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(145deg, rgba(0, 212, 255, 0.1), rgba(255, 107, 157, 0.1));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .step:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+            border-left-color: #ff6b9d;
+        }
+        
+        .step:hover::before {
+            opacity: 1;
+        }
+        
+        .step h3 {
+            color: #00d4ff;
+            margin-bottom: 10px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+        }
+        
+        .step h3::before {
+            content: '▶';
+            margin-right: 10px;
+            font-size: 0.8em;
+            color: #ff6b9d;
+            transition: transform 0.3s ease;
+        }
+        
+        .step:hover h3::before {
+            transform: translateX(5px);
+        }
+        
+        .explanation {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, opacity 0.5s ease;
+            opacity: 0;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0 15px;
+            border-radius: 5px;
+            margin-top: 0;
+        }
+        
+        .step:hover .explanation {
+            max-height: 500px;
+            opacity: 1;
+            padding: 15px;
+            margin-top: 15px;
+        }
+        
+        .explanation p {
+            color: #c0c0d0;
+            margin: 8px 0;
+            line-height: 1.7;
+        }
+        
+        .explanation ul {
             margin: 10px 0;
-            border-radius: 5px;
+            padding-left: 25px;
+            color: #d0d0e0;
         }
+        
+        .explanation li {
+            margin: 5px 0;
+        }
+        
+        .ai-tool {
+            background: linear-gradient(145deg, #1a3a4a, #1e4a5a);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border: 1px solid #00d4ff;
+            box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+        }
+        
+        .ai-tool strong {
+            color: #00d4ff;
+            font-size: 1.2em;
+        }
+        
+        .advantages {
+            background: linear-gradient(145deg, #2a1a2e, #3a1e3e);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #ff6b9d;
+        }
+        
+        .advantages ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .advantages li {
+            margin: 12px 0;
+            color: #e0e0f0;
+            font-size: 1.05em;
+        }
+        
         footer {
             text-align: center;
-            margin-top: 30px;
-            color: #7f8c8d;
+            margin-top: 40px;
+            color: #606080;
+            font-size: 0.9em;
+            padding-top: 20px;
+            border-top: 1px solid #3a3a5c;
+        }
+        
+        code {
+            background: rgba(0, 212, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 3px;
+            color: #00d4ff;
+            font-family: 'Courier New', monospace;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+            
+            h2 {
+                font-size: 1.4em;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Como Fiz Meu Site com Inteligência Artificial</h1>
-        
-        <p>Olá! Neste site, vou compartilhar como utilizei inteligência artificial para criar minha página web de forma rápida e eficiente.</p>
+        <p class="subtitle">Um guia passo a passo sobre como utilizei IA para criar minha página web de forma rápida e eficiente</p>
 
         <h2>Passo a Passo</h2>
         
-        <div class="step">
-            <h3>1. Definição do Objetivo</h3>
-            <p>Primeiro, expliquei para a IA o que queria: uma página HTML mostrando como criei o site com assistência de inteligência artificial.</p>
-        </div>
+        <div class="step-container">
+            <div class="step">
+                <h3>1. Definição do Objetivo</h3>
+                <div class="explanation">
+                    <p>No início do projeto, deixei claro para a inteligência artificial exatamente o que eu quería desenvolver.</p>
+                    <p>Utilizei prompts detalhados, estratégicos e bem estruturados para explicar como deveria ser o site, qual seria seu objetivo e como a experiência visual deveria funcionar.</p>
+                    <p>Quanto mais específico eu fui nas instruções, melhores foram os resultados gerados pela IA.</p>
+                    <p>Essa etapa foi essencial para garantir que o projeto tivesse identidade própria e seguisse exatamente a ideia que eu imaginava.</p>
+                </div>
+            </div>
 
-        <div class="step">
-            <h3>2. Geração do Código</h3>
-            <p>Describei minha necessidade em detalhes e a IA gerou todo o código HTML e CSS necessário, incluindo:</p>
-            <ul>
-                <li>Estrutura HTML5 completa</li>
-                <li>Estilos CSS para design moderno</li>
-                <li>Layout responsivo para celulares</li>
-            </ul>
-        </div>
+            <div class="step">
+                <h3>2. Geração do Código</h3>
+                <div class="explanation">
+                    <p>Depois de definir o objetivo do projeto, escolhi quais linguagens seriam utilizadas na construção do site.</p>
+                    <p>Decidi desenvolver toda a estrutura utilizando HTML, CSS e JavaScript.</p>
+                    <p>Com base nas instruções fornecidas, a IA ajudou na criação do código da página, incluindo:</p>
+                    <ul>
+                        <li>Estrutura do site em HTML</li>
+                        <li>Estilização e design com CSS</li>
+                        <li>Funcionalidades e interações usando JavaScript</li>
+                    </ul>
+                    <p>Essa etapa acelerou muito o desenvolvimento e facilitou a criação de um layout moderno e responsivo.</p>
+                </div>
+            </div>
 
-        <div class="step">
-            <h3>3. Revisão e Ajustes</h3>
-            <p>Revisei o código gerado e fiz pequenos ajustes nas cores, textos e layout conforme meu gosto pessoal.</p>
-        </div>
+            <div class="step">
+                <h3>3. Revisão e Ajustes</h3>
+                <div class="explanation">
+                    <p>Após a geração do código, revisei cuidadosamente toda a estrutura do projeto.</p>
+                    <p>Procurei possíveis erros, organizei partes do código e analisei elementos visuais como cores, espaçamentos e aparência geral do site.</p>
+                    <p>Além disso, utilizei esse processo para aprender mais sobre programação, desenvolvimento web e também sobre como a inteligência artificial funciona durante a criação de projetos.</p>
+                    <p>Essa etapa foi importante não apenas para melhorar o site, mas também para aumentar meu conhecimento técnico.</p>
+                </div>
+            </div>
 
-        <div class="step">
-            <h3>4. Publicação</h3>
-            <p>Salvei o arquivo como <code>index.html</code> e abri no navegador para visualizar o resultado final.</p>
+            <div class="step">
+                <h3>4. Publicação</h3>
+                <div class="explanation">
+                    <p>Com o projeto finalizado, comecei a procurar maneiras gratuitas de publicar o site na internet para que outras pessoas pudessem acessá-lo.</p>
+                    <p>Foi então que descobri o GitHub e a ferramenta GitHub Pages, que me permitiu visualizar o site funcionando diretamente na web e também hospedar o projeto gratuitamente.</p>
+                    <p>Além da hospedagem, consegui gerar um link público para compartilhar o site no meu perfil do Instagram e mostrar o resultado final para qualquer pessoa interessada em conhecer o projeto.</p>
+                </div>
+            </div>
         </div>
 
         <h2>Ferramentas de IA Utilizadas</h2>
@@ -87,15 +272,18 @@
 
         <h2>Vantagens de Usar IA</h2>
         
-        <ul>
-            <li>⚡ <strong>Velocidade:</strong> Código gerado em segundos</li>
-            <li>🎯 <strong>Qualidade:</strong> Código limpo e bem estruturado</li>
-            <li>📚 <strong>Aprendizado:</strong> Entendi como cada parte funciona</li>
-            <li>💡 <strong>Criatividade:</strong> Ideias novas para melhorar o design</li>
-        </ul>
+        <div class="advantages">
+            <ul>
+                <li>⚡ <strong>Velocidade:</strong> Código gerado em segundos</li>
+                <li>🎯 <strong>Qualidade:</strong> Código limpo e bem estruturado</li>
+                <li>📚 <strong>Aprendizado:</strong> Entendi como cada parte funciona</li>
+                <li>💡 <strong>Criatividade:</strong> Ideias novas para melhorar o design</li>
+            </ul>
+        </div>
 
         <footer>
             <p>Criado em Maio de 2026 com ajuda de Inteligência Artificial</p>
+            <p style="margin-top: 8px; color: #00d4ff;">🎮 Estilo Dark Empresarial + Gamer</p>
         </footer>
     </div>
 </body>
