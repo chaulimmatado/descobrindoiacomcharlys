@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <title>Teste de Performance Gráfica</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: sans-serif;
+      background: #000;
+      color: #FFF;
+    }
+    #info {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.7);
+      border-radius: 4px;
+      font-size: 14px;
+      pointer-events: none;
+    }
+    #controls {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.7);
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    button {
+      margin: 4px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+  <div id="info">FPS: --- | Cubos: --- | Tamanho: ---</div>
+  <div id="controls">
+    <button onclick="addCubes()">+ 1K CUBOS</button>
+    <button onclick="addCubes(10000)">+ 10K CUBOS</button>
+    <button onclick="addCubes(100000)">+ 100K CUBOS</button>
+    <button onclick="resetScene()">RESET</button>
+  </div>
+  <script>
+    let scene, camera, renderer, controls;
+    let cubes = [];
+    let cubesCount = 0;
+    let lastTime = 0;
+    let frameCount = 0;
+    let fps = 0;
+
+    function init() {
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x111111);
+
+      camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(0, 10, 50);
+
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+      document.body.appendChild(renderer.domElement);
+
+      controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+
+      window.addEventListener("resize", () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+
+      animate();
+    }
+
+    function addCubes(n = 1000) {
+      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const material = new THREE.MeshStandardMaterial({ metalness: 0.8, roughness: 0.2 });
+
+      for (let i = 0; i < n; i++) {
+        const cube = new THREE.Mesh(geometry, material);
+        cube.position.set(
+          (Math.random() - 0.5) * 100,
+          (Math.random() - 0.5) * 100,
+          (Math.random() - 0.5) * 100
+        );
+        cube.rotation.set(
+          Math.random() * Math.PI,
+          Math.random() * Math.PI,
+          Math.random() * Math.PI
+        );
+        cube.scale.setScalar(0.5 + Math.random() * 1.5);
+        scene.add(cube);
+        cubes.push(cube);
+      }
+      cubesCount += n;
+      updateUI();
+    }
+
+    function resetScene() {
+      for (const cube of cubes) {
+        scene.remove(cube);
+      }
+      cubes = [];
+      cubesCount = 0;
+      updateUI();
+    }
+
+    function updateUI() {
+      const info = document.getElementById("info");
+      info.innerHTML = `FPS: ${Math.round(fps)} | Cubos: ${cubesCount.toLocaleString()} | Tamanho: ${window.innerWidth}x${window.innerHeight}`;
+    }
+
+    function animate(timestamp) {
+      requestAnimationFrame(animate);
+
+      // FPS
+      frameCount++;
+      if (timestamp - lastTime >= 1000) {
+        fps = frameCount;
+        frameCount = 0;
+        lastTime = timestamp;
+        updateUI();
+      }
+
+      // Atualiza cubos
+      for (const cube of cubes) {
+        cube.rotation.x += 0.01;
+        cube.rotation.y += 0.01;
+        // efeito pesado para a GPU
+        cube.material.metalness = 0.9 + Math.sin(timestamp * 0.001) * 0.2;
+      }
+
+      controls.update();
+      renderer.render(scene, camera);
+    }
+
+    init();
+    addCubes(1000); // começa com 1K cubos
+  </script>
+</body>
+</html>
