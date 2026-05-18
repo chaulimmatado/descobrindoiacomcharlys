@@ -2,14 +2,14 @@
 <html lang="pt">
 <head>
   <meta charset="UTF-8" />
-  <title>Teste de Performance Gráfica</title>
+  <title>Teste de Ray Marching</title>
   <style>
     body {
       margin: 0;
-      overflow: hidden;
-      font-family: sans-serif;
-      background: #000;
+      background: #111;
       color: #FFF;
+      font-family: sans-serif;
+      overflow: hidden;
     }
     #info {
       position: absolute;
@@ -18,131 +18,144 @@
       padding: 8px 12px;
       background: rgba(0,0,0,0.7);
       border-radius: 4px;
-      font-size: 14px;
-      pointer-events: none;
-    }
-    #controls {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 8px 12px;
-      background: rgba(0,0,0,0.7);
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    button {
-      margin: 4px;
-      padding: 6px 10px;
-      font-size: 12px;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.152.2/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-  <div id="info">FPS: --- | Cubos: --- | Tamanho: ---</div>
-  <div id="controls">
-    <button onclick="addCubes()">+ 1K CUBOS</button>
-    <button onclick="addCubes(10000)">+ 10K CUBOS</button>
-    <button onclick="addCubes(100000)">+ 100K CUBOS</button>
-    <button onclick="resetScene()">RESET</button>
-  </div>
+  <canvas id="canvas" style="display: block;"></canvas>
+  <div id="info">FPS: ---</div>
+
+  <script type="glsl" id="frag">
+    precision highp float;
+    uniform vec2 uResolution;
+    uniform float uTime;
+
+    vec3 rayDirection(float fov, vec2 size, vec2 fragCoord) {
+      vec2 xy = fragCoord - size / 2.0;
+      float z = size.y / tan(radians(fov) / 2.0);
+      return normalize(vec3(xy, -z));
+    }
+
+    float sphere(vec3 p, float r) {
+      return length(p) - r;
+    }
+
+    float map(vec3 p) {
+      return sphere(p - vec3(sin(uTime)*3.0, 0.0, 0.0), 2.0);
+    }
+
+    vec3 calcNormal(vec3 p) {
+      const float eps = 0.001;
+      return normalize(vec3(
+        map(p + vec3(eps,0,0)) - map(p - vec3(eps,0,0)),
+        map(p + vec3(0,eps,0)) - map(p - vec3(0,eps,0)),
+        map(p + vec3(0,0,eps)) - map(p - vec3(0,0,eps))
+      ));
+    }
+
+    vec3 shade(vec3 ro, vec3 rd, float t) {
+      vec3 p = ro + rd * t;
+      vec3 light = normalize(vec3(1.0, 1.0, 1.0));
+      vec3 normal = calcNormal(p);
+      float diff = max(0.0, dot(normal, light));
+      vec3 col = 0.5 + 0.5 * sin(p.x + uTime + 0.0) * 0.5;
+      col *= diff * 0.8 + 0.2;
+      return col;
+    }
+
+    void main() {
+      vec2 uv = gl_FragCoord.xy / uResolution.xy;
+      vec3 ro = vec3(0.0, 0.0, -5.0);
+      vec3 rd = rayDirection(60.0, uResolution.xy, gl_FragCoord.xy);
+
+      float t = 0.0;
+      for (int i = 0; i < 128; i ++) { // aumente este número para deixar mais pesado
+        vec3 p = ro + rd * t;
+        float d = map(p);
+        if (d < 0.001 || t > 50.0) break;
+        t += d * 0.5;
+      }
+
+      vec3 color = t < 50.0 ? shade(ro, rd, t) : vec3(0.0);
+
+      gl_FragColor = vec4(color, 1.0);
+    }
+  </script>
+
   <script>
-    let scene, camera, renderer, controls;
-    let cubes = [];
-    let cubesCount = 0;
-    let lastTime = 0;
+    const canvas = document.getElementById("canvas");
+    const info = document.getElementById("info");
+    const gl = canvas.getContext("webgl");
+
+    if (!gl) {
+      alert("WebGL não suportado");
+      throw "WebGL not supported";
+    }
+
+    // Programa GLSL
+    const vs = `
+      attribute vec2 position;
+      void main() {
+        gl_Position = vec4(position, 0.0, 1.0);
+      }
+    `;
+    const fs = document.getElementById("frag").textContent;
+
+    const program = gl.createProgram();
+    const vShader = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vShader, vs);
+    gl.compileShader(vShader);
+    gl.attachShader(program, vShader);
+
+    const fShader = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fShader, fs);
+    gl.compileShader(fShader);
+    gl.attachShader(program, fShader);
+
+    gl.linkProgram(program);
+    gl.useProgram(program);
+
+    // Vértices do quad
+    const verts = new Float32Array([-1,-1, 1,-1, -1,1, 1,1]);
+    const vbo = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
+    gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+
+    const posLoc = gl.getAttribLocation(program, "position");
+    gl.enableVertexAttribArray(posLoc);
+    gl.vertexAttribPointer(pos退役军人Loc, 2, gl.FLOAT, false, 0, 0);
+
+    const resolutionLoc = gl.getUniformLocation(program, "uResolution");
+    const timeLoc = gl.getUniformLocation(program, "uTime");
+
+    // Loop de animação
     let frameCount = 0;
+    let lastTime = 0;
     let fps = 0;
 
-    function init() {
-      scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x111111);
-
-      camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-      camera.position.set(0, 10, 50);
-
-      renderer = new THREE.WebGLRenderer({ antialias: true });
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(window.devicePixelRatio);
-      document.body.appendChild(renderer.domElement);
-
-      controls = new THREE.OrbitControls(camera, renderer.domElement);
-      controls.enableDamping = true;
-
-      window.addEventListener("resize", () => {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-      });
-
-      animate();
-    }
-
-    function addCubes(n = 1000) {
-      const geometry = new THREE.BoxGeometry(1, 1, 1);
-      const material = new THREE.MeshStandardMaterial({ metalness: 0.8, roughness: 0.2 });
-
-      for (let i = 0; i < n; i++) {
-        const cube = new THREE.Mesh(geometry, material);
-        cube.position.set(
-          (Math.random() - 0.5) * 100,
-          (Math.random() - 0.5) * 100,
-          (Math.random() - 0.5) * 100
-        );
-        cube.rotation.set(
-          Math.random() * Math.PI,
-          Math.random() * Math.PI,
-          Math.random() * Math.PI
-        );
-        cube.scale.setScalar(0.5 + Math.random() * 1.5);
-        scene.add(cube);
-        cubes.push(cube);
-      }
-      cubesCount += n;
-      updateUI();
-    }
-
-    function resetScene() {
-      for (const cube of cubes) {
-        scene.remove(cube);
-      }
-      cubes = [];
-      cubesCount = 0;
-      updateUI();
-    }
-
-    function updateUI() {
-      const info = document.getElementById("info");
-      info.innerHTML = `FPS: ${Math.round(fps)} | Cubos: ${cubesCount.toLocaleString()} | Tamanho: ${window.innerWidth}x${window.innerHeight}`;
-    }
-
-    function animate(timestamp) {
-      requestAnimationFrame(animate);
-
-      // FPS
+    function animate(now) {
+      now *= 0.001;
       frameCount++;
-      if (timestamp - lastTime >= 1000) {
+      if (now - lastTime >= 1.0) {
         fps = frameCount;
         frameCount = 0;
-        lastTime = timestamp;
-        updateUI();
+        lastTime = now;
+        info.textContent = `FPS: ${fps}`;
       }
 
-      // Atualiza cubos
-      for (const cube of cubes) {
-        cube.rotation.x += 0.01;
-        cube.rotation.y += 0.01;
-        // efeito pesado para a GPU
-        cube.material.metalness = 0.9 + Math.sin(timestamp * 0.001) * 0.2;
-      }
+      // Tamanho do canvas
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
+      gl.uniform1f(timeLoc, now);
 
-      controls.update();
-      renderer.render(scene, camera);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+      requestAnimationFrame(animate);
     }
 
-    init();
-    addCubes(1000); // começa com 1K cubos
+    animate(0);
   </script>
 </body>
 </html>
