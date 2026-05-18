@@ -58,7 +58,7 @@
       vec3 light = normalize(vec3(1.0, 1.0, 1.0));
       vec3 normal = calcNormal(p);
       float diff = max(0.0, dot(normal, light));
-      vec3 col = 0.5 + 0.5 * sin(p.x + uTime + 0.0) * 0.5;
+      vec3 col = 0.5 + 0.5 * sin(p.x + uTime) * 0.5;
       col *= diff * 0.8 + 0.2;
       return col;
     }
@@ -69,7 +69,7 @@
       vec3 rd = rayDirection(60.0, uResolution.xy, gl_FragCoord.xy);
 
       float t = 0.0;
-      for (int i = 0; i < 128; i ++) { // aumente este número para deixar mais pesado
+      for (int i = 0; i < 128; i ++) {
         vec3 p = ro + rd * t;
         float d = map(p);
         if (d < 0.001 || t > 50.0) break;
@@ -88,11 +88,10 @@
     const gl = canvas.getContext("webgl");
 
     if (!gl) {
-      alert("WebGL não suportado");
+      alert("Erro: WebGL não suportado ou desativado no navegador.\nTente usar Chrome/Edge/Firefox e verifique F12 → Console.");
       throw "WebGL not supported";
     }
 
-    // Programa GLSL
     const vs = `
       attribute vec2 position;
       void main() {
@@ -115,7 +114,6 @@
     gl.linkProgram(program);
     gl.useProgram(program);
 
-    // Vértices do quad
     const verts = new Float32Array([-1,-1, 1,-1, -1,1, 1,1]);
     const vbo = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
@@ -123,12 +121,11 @@
 
     const posLoc = gl.getAttribLocation(program, "position");
     gl.enableVertexAttribArray(posLoc);
-    gl.vertexAttribPointer(pos退役军人Loc, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
 
     const resolutionLoc = gl.getUniformLocation(program, "uResolution");
     const timeLoc = gl.getUniformLocation(program, "uTime");
 
-    // Loop de animação
     let frameCount = 0;
     let lastTime = 0;
     let fps = 0;
@@ -143,9 +140,9 @@
         info.textContent = `FPS: ${fps}`;
       }
 
-      // Tamanho do canvas
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      gl.viewport(0, 0, canvas.width, canvas.height);
       gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
       gl.uniform1f(timeLoc, now);
 
