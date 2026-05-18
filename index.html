@@ -2,681 +2,235 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ecos do Assovio - Versão Expandida</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Eriky - Feed de Fotos</title>
   <style>
-    html, body {
+    * {
       margin: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #050610;
-      font-family: monospace;
+      padding: 0;
+      box-sizing: border-box;
     }
-    canvas {
-      display: block;
-      width: 100vw;
-      height: 100vh;
-      image-rendering: pixelated;
-      background: radial-gradient(circle at center, #11152a 0%, #050610 60%, #020307 100%);
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f9;
+      color: #2c3e50;
     }
-    #ui {
-      position: fixed;
-      left: 12px;
-      top: 12px;
-      color: #dbe4ff;
-      text-shadow: 0 0 6px rgba(120,160,255,.35);
-      font-size: 14px;
-      line-height: 1.45;
-      user-select: none;
-      pointer-events: none;
-      white-space: pre-line;
-    }
-    #msg {
-      position: fixed;
-      left: 12px;
-      bottom: 12px;
-      color: #b7c4ff;
-      text-shadow: 0 0 6px rgba(120,160,255,.35);
-      font-size: 13px;
-      max-width: 860px;
-    }
-    #startOverlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,.72);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10;
+
+    header {
+      background: linear-gradient(135deg, #6a11cb, #2575fc);
       color: white;
+      padding: 1.5rem 0;
+      text-align: center;
+      border-bottom-left-radius: 30px;
+      border-bottom-right-radius: 30px;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+    }
+
+    header p {
+      font-size: 0.95rem;
+      opacity: 0.9;
+    }
+
+    main {
+      max-width: 800px;
+      margin: 0 auto 3rem;
+      padding: 1rem;
+    }
+
+    .upload-area {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+      margin-bottom: 2rem;
       text-align: center;
     }
-    #startOverlay button {
-      border: 0;
-      background: #6a7dff;
-      color: white;
-      padding: 14px 20px;
+
+    .upload-btn {
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
       border-radius: 10px;
+      background: #25D366;
+      color: white;
+      font-weight: 600;
       cursor: pointer;
-      font-size: 16px;
+      border: none;
+      font-size: 1rem;
+    }
+
+    .upload-input {
+      display: none;
+    }
+
+    .feed {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .post {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      overflow: hidden;
+    }
+
+    .post img {
+      width: 100%;
+      height: 400px;
+      object-fit: cover;
+    }
+
+    .post-footer {
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid #eee;
+    }
+
+    .post-footer p {
+      font-size: 0.95rem;
+      color: #555;
+    }
+
+    .like-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: none;
+      background: #e0e0e0;
+      cursor: pointer;
+      color: #333;
+      font-size: 0.9rem;
+    }
+
+    .like-btn.liked {
+      background: #ff3b30;
+      color: white;
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem 0;
+      color: #777;
+      font-size: 0.9rem;
     }
   </style>
 </head>
 <body>
-<div id="startOverlay">
-  <div>
-    <h1 style="margin:0 0 10px 0;">Ecos do Assovio</h1>
-    <p style="margin:0 0 16px 0;">Clique para ativar áudio.</p>
-    <button id="startBtn">Iniciar</button>
-  </div>
-</div>
+  <header>
+    <h1>Eriky</h1>
+    <p>Seu feed de fotos pessoal</p>
+  </header>
 
-<div id="ui"></div>
-<div id="msg"></div>
-<canvas id="game"></canvas>
+  <main>
+    <!-- Área de upload -->
+    <section class="upload-area">
+      <h2>Upload de foto</h2>
+      <p>Escolha uma foto e ela vai aparecer no feed abaixo.</p>
+      <label for="file-upload" class="upload-btn">
+        📸 Selecionar foto
+      </label>
+      <input type="file" id="file-upload" class="upload-input" accept="image/*" />
+    </section>
 
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-const ui = document.getElementById('ui');
-const msg = document.getElementById('msg');
-const startOverlay = document.getElementById('startOverlay');
-const startBtn = document.getElementById('startBtn');
+    <!-- Feed de fotos -->
+    <section class="feed" id="feed">
+      <!-- As fotos vão aparecer aqui via JS -->
+    </section>
+  </main>
 
-let W = innerWidth, H = innerHeight;
-function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
-addEventListener('resize', resize); resize();
+  <footer>
+    © 2026 Eriky – Feed pessoal exibido no navegador.
+  </footer>
 
-const input = {};
-addEventListener('keydown', e => {
-  input[e.key.toLowerCase()] = true;
-  if ([" ","arrowup","arrowdown","arrowleft","arrowright"].includes(e.key.toLowerCase())) e.preventDefault();
-});
-addEventListener('keyup', e => input[e.key.toLowerCase()] = false);
+  <script>
+    const fileInput = document.getElementById("file-upload");
+    const feed = document.getElementById("feed");
 
-let audioCtx, masterGain;
-let audioReady = false;
-function initAudio() {
-  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  masterGain = audioCtx.createGain();
-  masterGain.gain.value = 0.12;
-  masterGain.connect(audioCtx.destination);
-  audioReady = true;
-}
-function tone(freq, dur=0.1, type='sine', gain=0.12) {
-  if (!audioReady) return;
-  const o = audioCtx.createOscillator();
-  const g = audioCtx.createGain();
-  o.type = type;
-  o.frequency.value = freq;
-  g.gain.value = gain;
-  o.connect(g);
-  g.connect(masterGain);
-  o.start();
-  g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dur);
-  o.stop(audioCtx.currentTime + dur);
-}
-function burstNoise(dur=0.08, gain=0.06) {
-  if (!audioReady) return;
-  const size = Math.floor(audioCtx.sampleRate * dur);
-  const buffer = audioCtx.createBuffer(1, size, audioCtx.sampleRate);
-  const data = buffer.getChannelData(0);
-  for (let i = 0; i < size; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / size);
-  const src = audioCtx.createBufferSource();
-  const g = audioCtx.createGain();
-  src.buffer = buffer;
-  src.connect(g);
-  g.connect(masterGain);
-  g.gain.value = gain;
-  src.start();
-}
-
-const tileSize = 32;
-const map = {
-  width: 90,
-  height: 22,
-  tiles: [],
-  materials: [],
-  spikes: [],
-  doors: [],
-  switches: [],
-  checkpoints: []
-};
-
-for (let y = 0; y < map.height; y++) {
-  map.tiles[y] = [];
-  map.materials[y] = [];
-  for (let x = 0; x < map.width; x++) {
-    map.tiles[y][x] = 0;
-    map.materials[y][x] = 'air';
-  }
-}
-for (let x = 0; x < map.width; x++) {
-  map.tiles[21][x] = 1;
-  map.materials[21][x] = 'stone';
-}
-for (let x = 8; x < 15; x++) {
-  map.tiles[17][x] = 1;
-  map.materials[17][x] = x % 2 === 0 ? 'metal' : 'stone';
-}
-for (let x = 18; x < 27; x++) {
-  map.tiles[14][x] = 1;
-  map.materials[14][x] = 'stone';
-}
-for (let x = 31; x < 38; x++) {
-  map.tiles[18][x] = 1;
-  map.materials[18][x] = 'metal';
-}
-for (let x = 43; x < 53; x++) {
-  map.tiles[16][x] = 1;
-  map.materials[16][x] = 'stone';
-}
-for (let x = 58; x < 67; x++) {
-  map.tiles[13][x] = 1;
-  map.materials[13][x] = 'metal';
-}
-for (let x = 72; x < 80; x++) {
-  map.tiles[17][x] = 1;
-  map.materials[17][x] = 'stone';
-}
-
-const player = {
-  x: 80, y: 200, w: 20, h: 30,
-  vx: 0, vy: 0,
-  speed: 0.55, jump: 8.2,
-  onGround: false,
-  facing: 1,
-  dash: 0,
-  dashCooldown: 0,
-  energy: 100,
-  maxEnergy: 100,
-  state: 'idle',
-  respawnX: 80,
-  respawnY: 200,
-  hasKey: false,
-  whistleBuffer: 0
-};
-
-const echoes = [];
-const projectiles = [];
-const enemies = [
-  {x: 520, y: 200, w: 24, h: 24, vx: 0.6, vy: 0, state: 'patrol', hearing: 0, dir: 1, timer: 0},
-  {x: 980, y: 300, w: 24, h: 24, vx: 0.5, vy: 0, state: 'patrol', hearing: 0, dir: -1, timer: 0},
-  {x: 1600, y: 260, w: 26, h: 26, vx: 0.4, vy: 0, state: 'patrol', hearing: 0, dir: 1, timer: 0}
-];
-
-const doors = [
-  {x: 780, y: 512 - 96, w: 32, h: 96, open: false, mode: 'short'},
-  {x: 1380, y: 512 - 96, w: 32, h: 96, open: false, mode: 'agudo'}
-];
-
-const switches = [
-  {x: 360, y: 512 - 48, w: 20, h: 20, active: false, mode: 'grave'},
-  {x: 1180, y: 512 - 48, w: 20, h: 20, active: false, mode: 'short'}
-];
-
-const checkpoints = [
-  {x: 220, y: 512 - 64, w: 18, h: 32, active: true},
-  {x: 1040, y: 512 - 64, w: 18, h: 32, active: false},
-  {x: 1760, y: 512 - 64, w: 18, h: 32, active: false}
-];
-
-const orbs = [
-  {x: 300, y: 300, collected: false},
-  {x: 1120, y: 250, collected: false},
-  {x: 1860, y: 200, collected: false}
-];
-
-let cameraX = 0;
-let running = true;
-
-function saveGame() {
-  localStorage.setItem('ecos_do_assovio_save_v2', JSON.stringify({
-    x: player.x, y: player.y, energy: player.energy,
-    respawnX: player.respawnX, respawnY: player.respawnY,
-    orbs: orbs.map(o => o.collected),
-    doors: doors.map(d => d.open),
-    checkpoints: checkpoints.map(c => c.active)
-  }));
-  msg.textContent = 'Jogo salvo.';
-}
-function loadGame() {
-  const raw = localStorage.getItem('ecos_do_assovio_save_v2');
-  if (!raw) return;
-  try {
-    const s = JSON.parse(raw);
-    if (typeof s.x === 'number') player.x = s.x;
-    if (typeof s.y === 'number') player.y = s.y;
-    if (typeof s.energy === 'number') player.energy = s.energy;
-    if (typeof s.respawnX === 'number') player.respawnX = s.respawnX;
-    if (typeof s.respawnY === 'number') player.respawnY = s.respawnY;
-    if (Array.isArray(s.orbs)) orbs.forEach((o,i)=>o.collected = !!s.orbs[i]);
-    if (Array.isArray(s.doors)) doors.forEach((d,i)=>d.open = !!s.doors[i]);
-    if (Array.isArray(s.checkpoints)) checkpoints.forEach((c,i)=>c.active = !!s.checkpoints[i]);
-    msg.textContent = 'Save carregado.';
-  } catch {}
-}
-
-function AABB(a, b) {
-  return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
-}
-function tileAt(px, py) {
-  const tx = Math.floor(px / tileSize);
-  const ty = Math.floor(py / tileSize);
-  if (tx < 0 || ty < 0 || tx >= map.width || ty >= map.height) return 1;
-  return map.tiles[ty][tx];
-}
-function materialAt(px, py) {
-  const tx = Math.floor(px / tileSize);
-  const ty = Math.floor(py / tileSize);
-  if (tx < 0 || ty < 0 || tx >= map.width || ty >= map.height) return 'stone';
-  return map.materials[ty][tx] || 'air';
-}
-
-function emitEcho(type) {
-  const cx = player.x + player.w / 2;
-  const cy = player.y + player.h / 2;
-  const cfg = {
-    short: {r: 90, c: '#86a7ff', s: () => tone(680, 0.06, 'triangle', 0.08)},
-    grave: {r: 120, c: '#7660ff', s: () => { tone(120, 0.16, 'sine', 0.12); burstNoise(0.09, 0.05); }},
-    agudo: {r: 140, c: '#c7f0ff', s: () => tone(1280, 0.05, 'sine', 0.08)},
-    continuo: {r: 70, c: '#9affd9', s: () => tone(220, 0.16, 'sine', 0.05)}
-  }[type];
-  if (!cfg || player.energy <= 0) return;
-
-  cfg.s();
-  player.energy -= type === 'continuo' ? 8 : 5;
-  echoes.push({x: cx, y: cy, r: 10, max: cfg.r, life: 1, c: cfg.c, type});
-
-  for (const d of doors) {
-    if (!d.open && d.mode === type) {
-      const dist = Math.hypot((d.x + d.w/2) - cx, (d.y + d.h/2) - cy);
-      if (dist < cfg.r) {
-        d.open = true;
-        msg.textContent = 'Uma porta antiga respondeu ao assovio.';
-      }
+    // Carrega as fotos que já foram adicionadas na sessão (localStorage)
+    function loadPhotos() {
+      const saved = localStorage.getItem("eriky-photos");
+      const photos = saved ? JSON.parse(saved) : [];
+      photos.forEach((photo) => {
+        createPost(photo.url, photo.liked);
+      });
     }
-  }
 
-  for (const s of switches) {
-    const dist = Math.hypot((s.x + s.w/2) - cx, (s.y + s.h/2) - cy);
-    if (dist < cfg.r && s.mode === type) {
-      s.active = !s.active;
-      if (s.active) {
-        doors[0].open = true;
-      } else {
-        doors[0].open = false;
-      }
-      msg.textContent = 'Mecanismo de eco acionado.';
-    }
-  }
+    // Cria um post no feed
+    function createPost(imgUrl, isLiked = false) {
+      const post = document.createElement("div");
+      post.className = "post";
 
-  if (type === 'grave') {
-    enemies.forEach(e => {
-      const d = Math.hypot((e.x+e.w/2)-cx, (e.y+e.h/2)-cy);
-      if (d < cfg.r) {
-        e.state = 'stunned';
-        e.timer = 45;
-        e.vx += (e.x > cx ? 2.2 : -2.2);
-      }
-    });
-  }
+      const img = document.createElement("img");
+      img.src = imgUrl;
+      img.alt = "Foto de Eriky";
 
-  if (type === 'agudo') {
-    orbs.forEach(o => {
-      const d = Math.hypot(o.x - cx, o.y - cy);
-      if (d < cfg.r) o.reveal = 1;
-    });
-  }
+      const footer = document.createElement("div");
+      footer.className = "post-footer";
 
-  if (type === 'continuo') {
-    player.vx *= 0.88;
-    player.vy *= 0.88;
-    player.whistleBuffer++;
-  }
-}
+      const timeLabel = document.createElement("p");
+      const now = new Date();
+      timeLabel.textContent = now.toLocaleDateString("pt-BR") + " às " + now.toLocaleTimeString("pt-BR");
 
-function respawn() {
-  player.x = player.respawnX;
-  player.y = player.respawnY;
-  player.vx = 0;
-  player.vy = 0;
-  player.energy = Math.max(35, player.energy);
-  msg.textContent = 'Você retornou ao último ponto de descanso.';
-}
+      const likeBtn = document.createElement("button");
+      likeBtn.className = "like-btn";
+      likeBtn.textContent = "Curtir";
+      if (isLiked) likeBtn.classList.add("liked");
 
-function moveAndCollide(ent) {
-  ent.x += ent.vx;
-  for (let y = 0; y < map.height; y++) {
-    for (let x = 0; x < map.width; x++) {
-      if (map.tiles[y][x] !== 1) continue;
-      const tile = {x:x*tileSize,y:y*tileSize,w:tileSize,h:tileSize};
-      if (AABB(ent, tile)) {
-        if (ent.vx > 0) ent.x = tile.x - ent.w;
-        else if (ent.vx < 0) ent.x = tile.x + tile.w;
-        ent.vx = 0;
-      }
-    }
-  }
-
-  ent.vy += 0.42;
-  if (ent.vy > 10) ent.vy = 10;
-  ent.y += ent.vy;
-  ent.onGround = false;
-
-  for (let y = 0; y < map.height; y++) {
-    for (let x = 0; x < map.width; x++) {
-      if (map.tiles[y][x] !== 1) continue;
-      const tile = {x:x*tileSize,y:y*tileSize,w:tileSize,h:tileSize};
-      if (AABB(ent, tile)) {
-        if (ent.vy > 0) {
-          ent.y = tile.y - ent.h;
-          ent.onGround = true;
-        } else if (ent.vy < 0) {
-          ent.y = tile.y + tile.h;
+      likeBtn.addEventListener("click", () => {
+        likeBtn.classList.toggle("liked");
+        if (likeBtn.classList.contains("liked")) {
+          likeBtn.textContent = "Curtido ✓";
+        } else {
+          likeBtn.textContent = "Curtir";
         }
-        ent.vy = 0;
-      }
-    }
-  }
+        savePhotos();
+      });
 
-  for (const d of doors) {
-    if (!d.open && AABB(ent, d)) {
-      if (ent.vx > 0) ent.x = d.x - ent.w;
-      else if (ent.vx < 0) ent.x = d.x + d.w;
-      ent.vx = 0;
-    }
-  }
-}
+      footer.appendChild(timeLabel);
+      footer.appendChild(likeBtn);
 
-function updatePlayer() {
-  const left = input['a'] || input['arrowleft'];
-  const right = input['d'] || input['arrowright'];
-  const up = input['w'] || input['arrowup'];
-  const down = input['s'] || input['arrowdown'];
-  const jump = input[' '];
-  const dash = input['shift'];
-  const save = input['f'];
+      post.appendChild(img);
+      post.appendChild(footer);
 
-  if (save) { saveGame(); input['f'] = false; }
-
-  if (player.dashCooldown > 0) player.dashCooldown--;
-  if (player.dash > 0) player.dash--;
-
-  if (dash && player.dashCooldown === 0) {
-    player.dash = 12;
-    player.dashCooldown = 50;
-    player.vx = player.facing * 7.5;
-    tone(500, 0.04, 'square', 0.05);
-    msg.textContent = 'Dash sonoro.';
-  }
-
-  if (left) { player.vx -= 0.32; player.facing = -1; }
-  if (right) { player.vx += 0.32; player.facing = 1; }
-
-  if (player.dash > 0) {
-    player.vx *= 0.99;
-  } else {
-    player.vx *= 0.90;
-  }
-
-  if (jump && player.onGround) {
-    player.vy = -player.jump;
-    tone(240, 0.05, 'sine', 0.03);
-  }
-
-  if (input['e']) { emitEcho('short'); input['e'] = false; }
-  if (input['j']) { emitEcho('grave'); input['j'] = false; }
-  if (input['k']) { emitEcho('agudo'); input['k'] = false; }
-  if (input['l']) { emitEcho('continuo'); }
-
-  player.vy += 0.42;
-  if (player.vy > 11) player.vy = 11;
-
-  const nearLadder = false;
-
-  moveAndCollide(player);
-
-  player.onGround = false;
-  for (let y = 0; y < map.height; y++) {
-    for (let x = 0; x < map.width; x++) {
-      if (map.tiles[y][x] !== 1) continue;
-      const tile = {x:x*tileSize,y:y*tileSize,w:tileSize,h:tileSize};
-      if (AABB(player, tile) && player.vy >= 0 && player.y + player.h - player.vy <= tile.y + 4) {
-        player.y = tile.y - player.h;
-        player.vy = 0;
-        player.onGround = true;
-      }
-    }
-  }
-
-  if (player.energy < player.maxEnergy) player.energy += 0.05;
-  if (player.energy > player.maxEnergy) player.energy = player.maxEnergy;
-
-  if (player.y > H + 200) respawn();
-
-  for (const cp of checkpoints) {
-    if (AABB(player, cp)) {
-      cp.active = true;
-      player.respawnX = cp.x;
-      player.respawnY = cp.y - 20;
-    }
-  }
-
-  for (const o of orbs) {
-    if (!o.collected && Math.hypot((player.x+player.w/2)-o.x, (player.y+player.h/2)-o.y) < 18) {
-      o.collected = true;
-      player.maxEnergy += 10;
-      player.energy = player.maxEnergy;
-      tone(880, 0.1, 'triangle', 0.08);
-      msg.textContent = 'Fragmento sonoro absorvido. Energia ampliada.';
-    }
-  }
-
-  if (player.x > 760 && player.x < 792 && doors[0].open) {
-    msg.textContent = 'A primeira região foi atravessada.';
-  }
-}
-
-function updateEnemies() {
-  for (const e of enemies) {
-    if (e.timer > 0) e.timer--;
-
-    let hearing = 0;
-    for (const ec of echoes) {
-      const d = Math.hypot((e.x+e.w/2)-ec.x, (e.y+e.h/2)-ec.y);
-      if (d < ec.max) hearing += (ec.max - d) / ec.max;
+      feed.appendChild(post);
     }
 
-    if (e.state === 'stunned') {
-      e.vx *= 0.92;
-      if (e.timer <= 0) e.state = 'patrol';
-    } else if (hearing > 0.2) {
-      e.state = 'investigate';
-      e.vx += Math.sign((player.x - e.x)) * 0.08;
-    } else {
-      e.state = 'patrol';
-      e.vx += e.dir * 0.04;
-      e.timer++;
-      if (e.timer > 120) { e.dir *= -1; e.timer = 0; }
+    // Salva o feed no localStorage
+    function savePhotos() {
+      const photos = [];
+      document.querySelectorAll(".post").forEach((post) => {
+        const img = post.querySelector("img");
+        const btn = post.querySelector(".like-btn");
+        photos.push({
+          url: img.src,
+          liked: btn.classList.contains("liked"),
+        });
+      });
+      localStorage.setItem("eriky-photos", JSON.stringify(photos));
     }
 
-    if (e.vx > 1.2) e.vx = 1.2;
-    if (e.vx < -1.2) e.vx = -1.2;
+    // Quando usuário escolhe uma foto
+    fileInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-    moveAndCollide(e);
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const imgDataUrl = evt.target.result;
+        createPost(imgDataUrl);
+        savePhotos();
+      };
+      reader.readAsDataURL(file);
+    });
 
-    if (AABB(player, e) && e.state !== 'stunned') {
-      if (player.dash > 0) {
-        e.state = 'stunned';
-        e.timer = 30;
-        e.vx = player.facing * 2.5;
-      } else {
-        respawn();
-      }
-    }
-
-    const material = materialAt(e.x + e.w/2, e.y + e.h/2);
-    if (material === 'metal' && e.state === 'investigate') {
-      e.vx *= 1.02;
-    }
-  }
-}
-
-function updateEchoes() {
-  for (let i = echoes.length - 1; i >= 0; i--) {
-    echoes[i].r += 5;
-    echoes[i].life -= 0.02;
-    if (echoes[i].life <= 0) echoes.splice(i, 1);
-  }
-}
-
-function drawTile(x, y, mat) {
-  if (mat === 'stone') ctx.fillStyle = '#25304a';
-  else if (mat === 'metal') ctx.fillStyle = '#3e4d73';
-  else if (mat === 'air') ctx.fillStyle = 'transparent';
-  else ctx.fillStyle = '#182030';
-  ctx.fillRect(x, y, tileSize, tileSize);
-  if (mat !== 'air') {
-    ctx.fillStyle = 'rgba(180,200,255,0.08)';
-    ctx.fillRect(x, y, tileSize, 3);
-  }
-}
-
-function render() {
-  ctx.clearRect(0, 0, W, H);
-
-  cameraX = Math.max(0, Math.min(player.x - W / 2, map.width * tileSize - W));
-
-  const grd = ctx.createLinearGradient(0,0,0,H);
-  grd.addColorStop(0,'#10162b');
-  grd.addColorStop(1,'#050610');
-  ctx.fillStyle = grd;
-  ctx.fillRect(0,0,W,H);
-
-  ctx.save();
-  ctx.translate(-cameraX, 0);
-
-  for (let y = 0; y < map.height; y++) {
-    for (let x = 0; x < map.width; x++) {
-      if (map.tiles[y][x] === 1) drawTile(x*tileSize, y*tileSize, map.materials[y][x]);
-    }
-  }
-
-  for (const d of doors) {
-    ctx.fillStyle = d.open ? '#263f61' : '#6a5cff';
-    ctx.fillRect(d.x, d.y, d.w, d.h);
-  }
-
-  for (const s of switches) {
-    ctx.fillStyle = s.active ? '#9affd9' : '#7a8cff';
-    ctx.fillRect(s.x, s.y, s.w, s.h);
-  }
-
-  for (const cp of checkpoints) {
-    ctx.fillStyle = cp.active ? '#c7f0ff' : '#43506d';
-    ctx.fillRect(cp.x, cp.y, cp.w, cp.h);
-  }
-
-  for (const o of orbs) {
-    if (o.collected) continue;
-    ctx.beginPath();
-    ctx.fillStyle = o.reveal ? '#dfffff' : '#8aa4ff';
-    ctx.arc(o.x, o.y, 7, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  for (const e of echoes) {
-    ctx.strokeStyle = e.c;
-    ctx.globalAlpha = e.life;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.arc(e.x, e.y, e.r, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-  }
-
-  for (const e of enemies) {
-    ctx.fillStyle = e.state === 'stunned' ? '#ff8fb1' : '#a7b0cc';
-    ctx.fillRect(e.x, e.y, e.w, e.h);
-    ctx.fillStyle = 'rgba(255,255,255,0.12)';
-    ctx.fillRect(e.x+4, e.y+5, e.w-8, 3);
-  }
-
-  ctx.fillStyle = '#dde6ff';
-  ctx.fillRect(player.x, player.y, player.w, player.h);
-  ctx.fillStyle = '#7a8cff';
-  ctx.fillRect(player.x + (player.facing === 1 ? 14 : 2), player.y + 9, 4, 4);
-
-  ctx.restore();
-
-  ctx.fillStyle = 'rgba(180,200,255,0.06)';
-  ctx.fillRect(0, 0, W, H);
-}
-
-function drawFog() {
-  ctx.fillStyle = 'rgba(120,140,190,0.03)';
-  for (let i = 0; i < 10; i++) {
-    ctx.beginPath();
-    ctx.ellipse((i * 260 - cameraX * 0.2) % (W + 320) - 160, 90 + i * 52, 140, 24, 0, 0, Math.PI * 2);
-    ctx.fill();
-  }
-}
-
-function updateUI() {
-  ui.textContent =
-`Estado: ${player.state}
-Energia sonora: ${Math.floor(player.energy)}/${player.maxEnergy}
-Fragmentos coletados: ${orbs.filter(o=>o.collected).length}/${orbs.length}
-Porta 1: ${doors[0].open ? 'aberta' : 'fechada'}
-Checkpoint: ${Math.round(player.respawnX)}, ${Math.round(player.respawnY)}`;
-}
-
-function gameLoop() {
-  if (!running) return;
-  updatePlayer();
-  updateEnemies();
-  updateEchoes();
-
-  if (input['1']) { player.state = 'idle'; }
-  if (input['2']) { player.state = 'run'; }
-
-  render();
-  drawFog();
-  updateUI();
-
-  requestAnimationFrame(gameLoop);
-}
-
-startBtn.onclick = async () => {
-  initAudio();
-  if (audioCtx.state === 'suspended') await audioCtx.resume();
-  startOverlay.style.display = 'none';
-  loadGame();
-  tone(300, 0.08, 'sine', 0.03);
-  msg.textContent = 'Explore o mundo, use assovios para manipular portas, inimigos e fragmentos.';
-  gameLoop();
-};
-
-setInterval(() => {
-  if (audioReady && audioCtx.state === 'running') {
-    const hum = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    const filter = audioCtx.createBiquadFilter();
-    hum.type = 'sine';
-    hum.frequency.value = 55;
-    filter.type = 'lowpass';
-    filter.frequency.value = 200;
-    g.gain.value = 0.01;
-    hum.connect(filter);
-    filter.connect(g);
-    g.connect(masterGain);
-    hum.start();
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.8);
-    hum.stop(audioCtx.currentTime + 0.8);
-  }
-}, 6000);
-</script>
+    // Carrega o feed ao abrir a página
+    loadPhotos();
+  </script>
 </body>
 </html>
