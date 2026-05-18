@@ -2,71 +2,152 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Contatos - Charlys</title>
+  <title>Charlys | Contatos Profissionais</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    :root {
+      --primary: #1e3a8a;
+      --primary-light: #3b82f6;
+      --text: #374151;
+      --bg: #f9fafb;
+      --card: #ffffff;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
       margin: 0;
       padding: 0;
-      background: #f5f5f5;
-      color: #333;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
     }
     .container {
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    h1 {
-      color: #2c3e50;
+      max-width: 680px;
+      margin: 50px auto;
+      padding: 30px 20px;
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
       text-align: center;
     }
+    h1 {
+      color: var(--primary);
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .tagline {
+      color: #6b7280;
+      margin-bottom: 30px;
+      font-size: 1.1rem;
+    }
+
     .section {
-      margin: 20px 0;
+      margin: 24px 0;
+      text-align: left;
     }
+    .section-title {
+      color: var(--primary);
+      margin-bottom: 12px;
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+
     .contact-item {
-      margin: 8px 0;
+      margin: 10px 0;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0f0f0;
     }
-    a {
-      color: #3498db;
+    .contact-item:last-child {
+      border-bottom: none;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 16px;
+      margin-top: 4px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 0.95rem;
       text-decoration: none;
+      color: white;
+      background: var(--primary);
+      box-shadow: 0 2px 4px rgba(30, 58, 138, 0.2);
+      border: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(30, 58, 138, 0.3);
+      background: var(--primary-light);
+    }
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: all 0.25s ease;
     }
     a:hover {
+      color: var(--primary-light);
       text-decoration: underline;
+      text-decoration-thickness: 2px;
+    }
+
+    .profile-desc {
+      margin: 20px 0;
+      color: #4b5563;
+      font-size: 0.95rem;
+    }
+    .cta {
+      margin-top: 20px;
+      font-size: 1.05rem;
+      font-weight: 500;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Charlys</h1>
-    <p style="text-align: center;">Jogador, motociclista e apaixonado por novas experiências.</p>
+    <p class="tagline">Empresário, motociclista e amante de experiências únicas.</p>
 
     <div class="section">
-      <h2>Contatos</h2>
+      <h2 class="section-title">Contatos Profissionais</h2>
       <div class="contact-item">
-        📱 <strong>WhatsApp:</strong> +55 69 99291‑9920<br>
-        <a href="https://wa.me/5569992919920" target="_blank">Clique aqui para chamar no WhatsApp</a>
+        📱 <strong>Telefone / WhatsApp:</strong><br>
+        +55 69 99291‑9920<br>
+        <a href="https://wa.me/5569992919920" class="btn" target="_blank">
+          Chamar no WhatsApp
+        </a>
       </div>
       <div class="contact-item">
-        ✉️ <strong>E‑mail:</strong> 
-        <a href="mailto:charlesmirandagoldner@gmail.com">charlesmirandagoldner@gmail.com</a>
+        ✉️ <strong>E‑mail:</strong><br>
+        <a href="mailto:charlesmirandagoldner@gmail.com">
+          charlesmirandagoldner@gmail.com
+        </a>
       </div>
       <div class="contact-item">
-        📷 <strong>Instagram:</strong> 
-        <a href="https://instagram.com/charlys_da_99" target="_blank">@charlys_da_99</a>
+        📷 <strong>Instagram:</strong><br>
+        <a href="https://instagram.com/charlys_da_99" target="_blank">
+          @charlys_da_99
+        </a>
       </div>
       <div class="contact-item">
-        📘 <strong>Facebook:</strong> 
-        <a href="https://facebook.com/share/1CKqg5YRGC/" target="_blank">Meu perfil no Facebook</a>
+        📘 <strong>Facebook:</strong><br>
+        <a href="https://facebook.com/share/1CKqg5YRGC/" target="_blank">
+          Perfil no Facebook
+        </a>
       </div>
     </div>
 
     <div class="section">
-      <p style="text-align: center;">
-        <strong>Gosto de jogos, motos e mulheres.</strong> Manda um zap, chama no Insta ou envia um e‑mail e vamos conversar!
+      <p class="profile-desc">
+        Gosto de jogos, motos e mulheres. Tenho mentalidade empreendedora e estou sempre aberto a novas parcerias, negociações e conversas de negócios.
+      </p>
+      <p class="cta">
+        Entre em contato profissionalmente via WhatsApp, e‑mail ou redes sociais e vamos conversar sobre oportunidades.
       </p>
     </div>
   </div>
