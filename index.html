@@ -28,6 +28,8 @@
             border-radius: 15px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
             border: 1px solid #3a3a5c;
+            position: relative;
+            z-index: 1;
         }
         
         h1 {
@@ -88,7 +90,7 @@
         
         .step:hover, .step.active {
             transform: scale(1.15) translateX(10px);
-            box-shadow: 0 15px 50px rgba(0, 212, 255, 0.6), 0 0 30px rgba(255, 107, 157, 0.4);
+            box-shadow: 0 15px 50px rgba(0, 212, 255, 0.8), 0 0 40px rgba(255, 107, 157, 0.5);
             border-left-color: #ff6b9d;
             background: linear-gradient(145deg, #2a3a5a, #3a4a6a);
             z-index: 100;
@@ -106,7 +108,7 @@
         
         .step:hover h3, .step.active h3 {
             color: #ff6b9d;
-            text-shadow: 0 0 15px rgba(255, 107, 157, 0.6);
+            text-shadow: 0 0 15px rgba(255, 107, 157, 0.8);
         }
         
         .step h3 {
@@ -166,11 +168,7 @@
             font-size: 1.05em;
         }
         
-        /* Outros tópicos ficam opacos quando um está ativo */
-        .step:not(:hover):not(.active) {
-            opacity: 0.35;
-            filter: blur(1px);
-        }
+        /* REMOVIDO: nada fica opaco ou embaçado */
         
         .ai-tool {
             background: linear-gradient(145deg, #1a3a4a, #1e4a5a);
@@ -222,14 +220,14 @@
             font-family: 'Courier New', monospace;
         }
         
-        /* Overlay escuro apenas no fundo, não na container */
+        /* Overlay escuro apenas no fundo */
         .overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.75);
             z-index: 0;
             opacity: 0;
             pointer-events: none;
@@ -343,19 +341,16 @@
         const overlay = document.querySelector('.overlay');
         
         steps.forEach(step => {
-            // Mouse enter (desktop)
             step.addEventListener('mouseenter', () => {
                 overlay.classList.add('show');
             });
             
-            // Mouse leave (desktop)
             step.addEventListener('mouseleave', () => {
                 if (!step.classList.contains('active')) {
                     overlay.classList.remove('show');
                 }
             });
             
-            // Click (mobile e desktop)
             step.addEventListener('click', () => {
                 steps.forEach(s => {
                     if (s !== step) s.classList.remove('active');
@@ -369,7 +364,6 @@
             });
         });
         
-        // Fechar ao clicar no overlay
         overlay.addEventListener('click', () => {
             steps.forEach(step => {
                 step.classList.remove('active');
