@@ -2,292 +2,73 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Eriky - Feed de Fotos</title>
+  <title>Contatos - Charlys</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    * {
+    body {
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #f4f6f9;
-      color: #2c3e50;
-    }
-
-    header {
-      background: linear-gradient(135deg, #6a11cb, #2575fc);
-      color: white;
-      padding: 1.5rem 0;
-      text-align: center;
-      border-bottom-left-radius: 30px;
-      border-bottom-right-radius: 30px;
-    }
-
-    header h1 {
-      font-size: 2.2rem;
-    }
-
-    header p {
-      font-size: 0.95rem;
-      opacity: 0.9;
-    }
-
-    main {
-      max-width: 800px;
-      margin: 0 auto 3rem;
-      padding: 1rem;
-    }
-
-    .upload-area {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 15px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-      margin-bottom: 2rem;
-      text-align: center;
-    }
-
-    .upload-btn {
-      display: inline-block;
-      padding: 0.8rem 1.5rem;
-      border-radius: 10px;
-      background: #25D366;
-      color: white;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      font-size: 1rem;
-    }
-
-    .upload-input {
-      display: none;
-    }
-
-    .feed {
-      display: flex;
-      flex-direction: column;
-      gap: 1.5rem;
-    }
-
-    .post {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-      overflow: hidden;
-    }
-
-    .post img {
-      width: 100%;
-      height: 400px;
-      object-fit: cover;
-      display: block;
-    }
-
-    .post-footer {
-      padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-top: 1px solid #eee;
-      gap: 1rem;
-    }
-
-    .post-footer p {
-      font-size: 0.95rem;
-      color: #555;
-    }
-
-    .like-btn {
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
-      border: none;
-      background: #e0e0e0;
-      cursor: pointer;
+      background: #f5f5f5;
       color: #333;
-      font-size: 0.9rem;
-      white-space: nowrap;
     }
-
-    .like-btn.liked {
-      background: #ff3b30;
-      color: white;
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
-
-    footer {
+    h1 {
+      color: #2c3e50;
       text-align: center;
-      padding: 1.5rem 0;
-      color: #777;
-      font-size: 0.9rem;
     }
-
-    .status {
-      margin-top: 1rem;
-      font-size: 0.95rem;
-      color: #555;
+    .section {
+      margin: 20px 0;
+    }
+    .contact-item {
+      margin: 8px 0;
+    }
+    a {
+      color: #3498db;
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
     }
   </style>
-
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 </head>
 <body>
-  <header>
-    <h1>Eriky</h1>
-    <p>Feed público de fotos — qualquer pessoa pode subir e ver</p>
-  </header>
+  <div class="container">
+    <h1>Charlys</h1>
+    <p style="text-align: center;">Jogador, motociclista e apaixonado por novas experiências.</p>
 
-  <main>
-    <section class="upload-area">
-      <h2>Upload de foto</h2>
-      <p>Escolha uma foto e ela vai aparecer no feed abaixo para todos verem.</p>
-      <label for="file-upload" class="upload-btn">📸 Selecionar foto</label>
-      <input type="file" id="file-upload" class="upload-input" accept="image/*" />
-      <div id="status" class="status"></div>
-    </section>
+    <div class="section">
+      <h2>Contatos</h2>
+      <div class="contact-item">
+        📱 <strong>WhatsApp:</strong> +55 69 99291‑9920<br>
+        <a href="https://wa.me/5569992919920" target="_blank">Clique aqui para chamar no WhatsApp</a>
+      </div>
+      <div class="contact-item">
+        ✉️ <strong>E‑mail:</strong> 
+        <a href="mailto:charlesmirandagoldner@gmail.com">charlesmirandagoldner@gmail.com</a>
+      </div>
+      <div class="contact-item">
+        📷 <strong>Instagram:</strong> 
+        <a href="https://instagram.com/charlys_da_99" target="_blank">@charlys_da_99</a>
+      </div>
+      <div class="contact-item">
+        📘 <strong>Facebook:</strong> 
+        <a href="https://facebook.com/share/1CKqg5YRGC/" target="_blank">Meu perfil no Facebook</a>
+      </div>
+    </div>
 
-    <section class="feed" id="feed"></section>
-  </main>
-
-  <footer>
-    © 2026 Eriky – Feed pessoal hospedado no GitHub e armazenado no Firebase.
-  </footer>
-
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAyrUOisDiIu7BZKB-osYKBAwbs_vwpBvo",
-      authDomain: "projeto-eriky.firebaseapp.com",
-      projectId: "projeto-eriky",
-      storageBucket: "projeto-eriky.firebasestorage.app",
-      messagingSenderId: "385006345734",
-      appId: "1:385006345734:web:030f5b5041559ad85fed87",
-      measurementId: "G-52F46504M8"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const storage = firebase.storage();
-
-    const POSTS_COLLECTION = "eriky-feed";
-    const feed = document.getElementById("feed");
-    const fileInput = document.getElementById("file-upload");
-    const statusEl = document.getElementById("status");
-
-    function setStatus(msg) {
-      statusEl.textContent = msg;
-    }
-
-    function createPost(imgUrl, postId, likes = 0, liked = false, createdAt = null) {
-      const post = document.createElement("div");
-      post.className = "post";
-      post.dataset.id = postId;
-
-      const img = document.createElement("img");
-      img.src = imgUrl;
-      img.alt = "Foto do feed público";
-
-      const footer = document.createElement("div");
-      footer.className = "post-footer";
-
-      const timeLabel = document.createElement("p");
-      if (createdAt) {
-        const date = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
-        timeLabel.textContent = date.toLocaleString("pt-BR");
-      } else {
-        timeLabel.textContent = "Foto enviada agora";
-      }
-
-      const likeBtn = document.createElement("button");
-      likeBtn.className = `like-btn ${liked ? "liked" : ""}`;
-      likeBtn.textContent = liked ? `Curtido ✓ (${likes})` : `Curtir (${likes})`;
-
-      likeBtn.addEventListener("click", async () => {
-        const newLiked = !likeBtn.classList.contains("liked");
-        const newLikes = newLiked ? likes + 1 : Math.max(0, likes - 1);
-
-        try {
-          await db.collection(POSTS_COLLECTION).doc(postId).update({
-            likes: newLikes
-          });
-
-          likes = newLikes;
-          if (newLiked) {
-            likeBtn.classList.add("liked");
-            likeBtn.textContent = `Curtido ✓ (${likes})`;
-          } else {
-            likeBtn.classList.remove("liked");
-            likeBtn.textContent = `Curtir (${likes})`;
-          }
-        } catch (err) {
-          console.error("Erro ao atualizar like:", err);
-          setStatus("Erro ao curtir a foto.");
-        }
-      });
-
-      footer.appendChild(timeLabel);
-      footer.appendChild(likeBtn);
-
-      post.appendChild(img);
-      post.appendChild(footer);
-
-      feed.appendChild(post);
-    }
-
-    async function loadPosts() {
-      feed.innerHTML = "";
-      try {
-        const snapshot = await db.collection(POSTS_COLLECTION).orderBy("createdAt", "desc").get();
-        snapshot.forEach((doc) => {
-          const data = doc.data();
-          createPost(data.imageUrl, doc.id, data.likes || 0, false, data.createdAt || null);
-        });
-      } catch (err) {
-        console.error("Erro ao carregar posts:", err);
-        setStatus("Erro ao carregar o feed. Verifique o Firebase.");
-      }
-    }
-
-    fileInput.addEventListener("change", async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      try {
-        setStatus("Enviando foto...");
-        const timestamp = Date.now();
-        const filePath = `feed/${timestamp}-${file.name}`;
-        const storageRef = storage.ref(filePath);
-        const uploadTask = storageRef.put(file);
-
-        uploadTask.on(
-          "state_changed",
-          () => {},
-          (err) => {
-            console.error("Erro no upload:", err);
-            setStatus("Erro no upload da foto.");
-          },
-          async () => {
-            const downloadUrl = await uploadTask.snapshot.ref.getDownloadURL();
-
-            await db.collection(POSTS_COLLECTION).add({
-              imageUrl: downloadUrl,
-              likes: 0,
-              createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            setStatus("Foto enviada com sucesso!");
-            await loadPosts();
-          }
-        );
-      } catch (err) {
-        console.error("Erro geral:", err);
-        setStatus("Não foi possível enviar a foto.");
-      }
-    });
-
-    loadPosts();
-  </script>
+    <div class="section">
+      <p style="text-align: center;">
+        <strong>Gosto de jogos, motos e mulheres.</strong> Manda um zap, chama no Insta ou envia um e‑mail e vamos conversar!
+      </p>
+    </div>
+  </div>
 </body>
 </html>
