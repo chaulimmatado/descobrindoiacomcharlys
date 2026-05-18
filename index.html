@@ -28,6 +28,11 @@
             border-radius: 15px;
             box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
             border: 1px solid #3a3a5c;
+            transition: filter 0.4s ease;
+        }
+        
+        .container.dimmed {
+            filter: blur(3px) brightness(0.6);
         }
         
         h1 {
@@ -37,6 +42,17 @@
             font-size: 2.5em;
             text-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
             letter-spacing: 2px;
+            transition: all 0.4s ease;
+        }
+        
+        .container.dimmed h1,
+        .container.dimmed h2,
+        .container.dimmed .subtitle,
+        .container.dimmed .ai-tool,
+        .container.dimmed .advantages,
+        .container.dimmed footer {
+            opacity: 0.4;
+            pointer-events: none;
         }
         
         .subtitle {
@@ -44,6 +60,7 @@
             color: #a0a0b0;
             margin-bottom: 40px;
             font-size: 1.1em;
+            transition: opacity 0.4s ease;
         }
         
         h2 {
@@ -52,10 +69,13 @@
             font-size: 1.8em;
             border-bottom: 2px solid #ff6b9d;
             padding-bottom: 10px;
+            transition: opacity 0.4s ease;
         }
         
         .step-container {
             margin: 20px 0;
+            position: relative;
+            z-index: 1;
         }
         
         .step {
@@ -65,9 +85,10 @@
             border-radius: 10px;
             border-left: 4px solid #00d4ff;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             position: relative;
-            overflow: hidden;
+            overflow: visible;
+            transform-origin: center;
         }
         
         .step::before {
@@ -80,16 +101,30 @@
             background: linear-gradient(145deg, rgba(0, 212, 255, 0.1), rgba(255, 107, 157, 0.1));
             opacity: 0;
             transition: opacity 0.3s ease;
+            border-radius: 10px;
         }
         
-        .step:hover {
-            transform: translateX(5px);
-            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3);
+        .step:hover, .step.active {
+            transform: scale(1.15) translateX(10px);
+            box-shadow: 0 15px 50px rgba(0, 212, 255, 0.6), 0 0 30px rgba(255, 107, 157, 0.4);
             border-left-color: #ff6b9d;
+            background: linear-gradient(145deg, #2a3a5a, #3a4a6a);
+            z-index: 100;
+            position: relative;
         }
         
-        .step:hover::before {
+        .step:hover::before, .step.active::before {
             opacity: 1;
+        }
+        
+        .step:hover h3::before, .step.active h3::before {
+            transform: translateX(8px);
+            color: #00d4ff;
+        }
+        
+        .step:hover h3, .step.active h3 {
+            color: #ff6b9d;
+            text-shadow: 0 0 15px rgba(255, 107, 157, 0.6);
         }
         
         .step h3 {
@@ -98,6 +133,7 @@
             font-size: 1.3em;
             display: flex;
             align-items: center;
+            transition: all 0.4s ease;
         }
         
         .step h3::before {
@@ -105,45 +141,47 @@
             margin-right: 10px;
             font-size: 0.8em;
             color: #ff6b9d;
-            transition: transform 0.3s ease;
-        }
-        
-        .step:hover h3::before {
-            transform: translateX(5px);
+            transition: all 0.4s ease;
         }
         
         .explanation {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.5s ease, opacity 0.5s ease;
+            transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
             opacity: 0;
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.5);
             padding: 0 15px;
             border-radius: 5px;
             margin-top: 0;
+            border: 1px solid rgba(0, 212, 255, 0.3);
         }
         
-        .step:hover .explanation {
-            max-height: 500px;
+        .step:hover .explanation, .step.active .explanation {
+            max-height: 600px;
             opacity: 1;
-            padding: 15px;
-            margin-top: 15px;
+            padding: 20px;
+            margin-top: 20px;
+            background: rgba(10, 20, 40, 0.95);
+            border: 1px solid #00d4ff;
+            box-shadow: inset 0 0 20px rgba(0, 212, 255, 0.2);
         }
         
         .explanation p {
-            color: #c0c0d0;
-            margin: 8px 0;
-            line-height: 1.7;
+            color: #d0d0e0;
+            margin: 10px 0;
+            line-height: 1.8;
+            font-size: 1.05em;
         }
         
         .explanation ul {
-            margin: 10px 0;
+            margin: 15px 0;
             padding-left: 25px;
-            color: #d0d0e0;
+            color: #e0e0f0;
         }
         
         .explanation li {
-            margin: 5px 0;
+            margin: 8px 0;
+            font-size: 1.05em;
         }
         
         .ai-tool {
@@ -153,6 +191,7 @@
             border-radius: 10px;
             border: 1px solid #00d4ff;
             box-shadow: 0 4px 15px rgba(0, 212, 255, 0.2);
+            transition: opacity 0.4s ease;
         }
         
         .ai-tool strong {
@@ -166,6 +205,7 @@
             border-radius: 10px;
             margin: 20px 0;
             border: 1px solid #ff6b9d;
+            transition: opacity 0.4s ease;
         }
         
         .advantages ul {
@@ -186,6 +226,7 @@
             font-size: 0.9em;
             padding-top: 20px;
             border-top: 1px solid #3a3a5c;
+            transition: opacity 0.4s ease;
         }
         
         code {
@@ -194,6 +235,25 @@
             border-radius: 3px;
             color: #00d4ff;
             font-family: 'Courier New', monospace;
+        }
+        
+        /* Overlay escuro quando um tópico está ativo */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 0;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        
+        .overlay.show {
+            opacity: 1;
+            pointer-events: auto;
         }
         
         @media (max-width: 768px) {
@@ -208,10 +268,16 @@
             h2 {
                 font-size: 1.4em;
             }
+            
+            .step:hover, .step.active {
+                transform: scale(1.1) translateX(5px);
+            }
         }
     </style>
 </head>
 <body>
+    <div class="overlay"></div>
+    
     <div class="container">
         <h1>Como Fiz Meu Site com Inteligência Artificial</h1>
         <p class="subtitle">Um guia passo a passo sobre como utilizei IA para criar minha página web de forma rápida e eficiente</p>
@@ -219,17 +285,17 @@
         <h2>Passo a Passo</h2>
         
         <div class="step-container">
-            <div class="step">
+            <div class="step" onclick="this.classList.toggle('active')">
                 <h3>1. Definição do Objetivo</h3>
                 <div class="explanation">
                     <p>No início do projeto, deixei claro para a inteligência artificial exatamente o que eu quería desenvolver.</p>
                     <p>Utilizei prompts detalhados, estratégicos e bem estruturados para explicar como deveria ser o site, qual seria seu objetivo e como a experiência visual deveria funcionar.</p>
                     <p>Quanto mais específico eu fui nas instruções, melhores foram os resultados gerados pela IA.</p>
-                    <p>Essa etapa foi essencial para garantir que o projeto tivesse identidade própria e seguisse exatamente a ideia que eu imaginava.</p>
+                    <p>Essa etapa foi essential para garantir que o projeto tivesse identidade própria e seguisse exatamente a ideia que eu imaginava.</p>
                 </div>
             </div>
 
-            <div class="step">
+            <div class="step" onclick="this.classList.toggle('active')">
                 <h3>2. Geração do Código</h3>
                 <div class="explanation">
                     <p>Depois de definir o objetivo do projeto, escolhi quais linguagens seriam utilizadas na construção do site.</p>
@@ -244,7 +310,7 @@
                 </div>
             </div>
 
-            <div class="step">
+            <div class="step" onclick="this.classList.toggle('active')">
                 <h3>3. Revisão e Ajustes</h3>
                 <div class="explanation">
                     <p>Após a geração do código, revisei cuidadosamente toda a estrutura do projeto.</p>
@@ -254,7 +320,7 @@
                 </div>
             </div>
 
-            <div class="step">
+            <div class="step" onclick="this.classList.toggle('active')">
                 <h3>4. Publicação</h3>
                 <div class="explanation">
                     <p>Com o projeto finalizado, comecei a procurar maneiras gratuitas de publicar o site na internet para que outras pessoas pudessem acessá-lo.</p>
@@ -286,5 +352,52 @@
             <p style="margin-top: 8px; color: #00d4ff;">🎮 Estilo Dark Empresarial + Gamer</p>
         </footer>
     </div>
+
+    <script>
+        // Efeito para escurecer o fundo quando passar o mouse ou clicar
+        const steps = document.querySelectorAll('.step');
+        const container = document.querySelector('.container');
+        const overlay = document.querySelector('.overlay');
+        
+        steps.forEach(step => {
+            // Mouse enter (desktop)
+            step.addEventListener('mouseenter', () => {
+                container.classList.add('dimmed');
+                overlay.classList.add('show');
+            });
+            
+            // Mouse leave (desktop)
+            step.addEventListener('mouseleave', () => {
+                if (!step.classList.contains('active')) {
+                    container.classList.remove('dimmed');
+                    overlay.classList.remove('show');
+                }
+            });
+            
+            // Click (mobile e desktop)
+            step.addEventListener('click', () => {
+                steps.forEach(s => {
+                    if (s !== step) s.classList.remove('active');
+                });
+                
+                if (step.classList.contains('active')) {
+                    container.classList.add('dimmed');
+                    overlay.classList.add('show');
+                } else {
+                    container.classList.remove('dimmed');
+                    overlay.classList.remove('show');
+                }
+            });
+        });
+        
+        // Fechar ao clicar no overlay
+        overlay.addEventListener('click', () => {
+            steps.forEach(step => {
+                step.classList.remove('active');
+            });
+            container.classList.remove('dimmed');
+            overlay.classList.remove('show');
+        });
+    </script>
 </body>
 </html>
