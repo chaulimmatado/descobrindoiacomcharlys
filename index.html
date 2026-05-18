@@ -83,6 +83,7 @@
       width: 100%;
       height: 400px;
       object-fit: cover;
+      display: block;
     }
 
     .post-footer {
@@ -91,6 +92,7 @@
       justify-content: space-between;
       align-items: center;
       border-top: 1px solid #eee;
+      gap: 1rem;
     }
 
     .post-footer p {
@@ -106,6 +108,7 @@
       cursor: pointer;
       color: #333;
       font-size: 0.9rem;
+      white-space: nowrap;
     }
 
     .like-btn.liked {
@@ -119,77 +122,110 @@
       color: #777;
       font-size: 0.9rem;
     }
+
+    .status {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+      color: #555;
+    }
   </style>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
 </head>
 <body>
   <header>
     <h1>Eriky</h1>
-    <p>Seu feed de fotos pessoal</p>
+    <p>Feed público de fotos — qualquer pessoa pode subir e ver</p>
   </header>
 
   <main>
-    <!-- Área de upload -->
     <section class="upload-area">
       <h2>Upload de foto</h2>
-      <p>Escolha uma foto e ela vai aparecer no feed abaixo.</p>
-      <label for="file-upload" class="upload-btn">
-        📸 Selecionar foto
-      </label>
+      <p>Escolha uma foto e ela vai aparecer no feed abaixo para todos verem.</p>
+      <label for="file-upload" class="upload-btn">📸 Selecionar foto</label>
       <input type="file" id="file-upload" class="upload-input" accept="image/*" />
+      <div id="status" class="status"></div>
     </section>
 
-    <!-- Feed de fotos -->
-    <section class="feed" id="feed">
-      <!-- As fotos vão aparecer aqui via JS -->
-    </section>
+    <section class="feed" id="feed"></section>
   </main>
 
   <footer>
-    © 2026 Eriky – Feed pessoal exibido no navegador.
+    © 2026 Eriky – Feed pessoal hospedado no GitHub e armazenado no Firebase.
   </footer>
 
   <script>
-    const fileInput = document.getElementById("file-upload");
-    const feed = document.getElementById("feed");
+    const firebaseConfig = {
+      apiKey: "AIzaSyAyrUOisDiIu7BZKB-osYKBAwbs_vwpBvo",
+      authDomain: "projeto-eriky.firebaseapp.com",
+      projectId: "projeto-eriky",
+      storageBucket: "projeto-eriky.firebasestorage.app",
+      messagingSenderId: "385006345734",
+      appId: "1:385006345734:web:030f5b5041559ad85fed87",
+      measurementId: "G-52F46504M8"
+    };
 
-    // Carrega as fotos que já foram adicionadas na sessão (localStorage)
-    function loadPhotos() {
-      const saved = localStorage.getItem("eriky-photos");
-      const photos = saved ? JSON.parse(saved) : [];
-      photos.forEach((photo) => {
-        createPost(photo.url, photo.liked);
-      });
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    const POSTS_COLLECTION = "eriky-feed";
+    const feed = document.getElementById("feed");
+    const fileInput = document.getElementById("file-upload");
+    const statusEl = document.getElementById("status");
+
+    function setStatus(msg) {
+      statusEl.textContent = msg;
     }
 
-    // Cria um post no feed
-    function createPost(imgUrl, isLiked = false) {
+    function createPost(imgUrl, postId, likes = 0, liked = false, createdAt = null) {
       const post = document.createElement("div");
       post.className = "post";
+      post.dataset.id = postId;
 
       const img = document.createElement("img");
       img.src = imgUrl;
-      img.alt = "Foto de Eriky";
+      img.alt = "Foto do feed público";
 
       const footer = document.createElement("div");
       footer.className = "post-footer";
 
       const timeLabel = document.createElement("p");
-      const now = new Date();
-      timeLabel.textContent = now.toLocaleDateString("pt-BR") + " às " + now.toLocaleTimeString("pt-BR");
+      if (createdAt) {
+        const date = createdAt.toDate ? createdAt.toDate() : new Date(createdAt);
+        timeLabel.textContent = date.toLocaleString("pt-BR");
+      } else {
+        timeLabel.textContent = "Foto enviada agora";
+      }
 
       const likeBtn = document.createElement("button");
-      likeBtn.className = "like-btn";
-      likeBtn.textContent = "Curtir";
-      if (isLiked) likeBtn.classList.add("liked");
+      likeBtn.className = `like-btn ${liked ? "liked" : ""}`;
+      likeBtn.textContent = liked ? `Curtido ✓ (${likes})` : `Curtir (${likes})`;
 
-      likeBtn.addEventListener("click", () => {
-        likeBtn.classList.toggle("liked");
-        if (likeBtn.classList.contains("liked")) {
-          likeBtn.textContent = "Curtido ✓";
-        } else {
-          likeBtn.textContent = "Curtir";
+      likeBtn.addEventListener("click", async () => {
+        const newLiked = !likeBtn.classList.contains("liked");
+        const newLikes = newLiked ? likes + 1 : Math.max(0, likes - 1);
+
+        try {
+          await db.collection(POSTS_COLLECTION).doc(postId).update({
+            likes: newLikes
+          });
+
+          likes = newLikes;
+          if (newLiked) {
+            likeBtn.classList.add("liked");
+            likeBtn.textContent = `Curtido ✓ (${likes})`;
+          } else {
+            likeBtn.classList.remove("liked");
+            likeBtn.textContent = `Curtir (${likes})`;
+          }
+        } catch (err) {
+          console.error("Erro ao atualizar like:", err);
+          setStatus("Erro ao curtir a foto.");
         }
-        savePhotos();
       });
 
       footer.appendChild(timeLabel);
@@ -201,36 +237,58 @@
       feed.appendChild(post);
     }
 
-    // Salva o feed no localStorage
-    function savePhotos() {
-      const photos = [];
-      document.querySelectorAll(".post").forEach((post) => {
-        const img = post.querySelector("img");
-        const btn = post.querySelector(".like-btn");
-        photos.push({
-          url: img.src,
-          liked: btn.classList.contains("liked"),
+    async function loadPosts() {
+      feed.innerHTML = "";
+      try {
+        const snapshot = await db.collection(POSTS_COLLECTION).orderBy("createdAt", "desc").get();
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          createPost(data.imageUrl, doc.id, data.likes || 0, false, data.createdAt || null);
         });
-      });
-      localStorage.setItem("eriky-photos", JSON.stringify(photos));
+      } catch (err) {
+        console.error("Erro ao carregar posts:", err);
+        setStatus("Erro ao carregar o feed. Verifique o Firebase.");
+      }
     }
 
-    // Quando usuário escolhe uma foto
-    fileInput.addEventListener("change", (e) => {
+    fileInput.addEventListener("change", async (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        const imgDataUrl = evt.target.result;
-        createPost(imgDataUrl);
-        savePhotos();
-      };
-      reader.readAsDataURL(file);
+      try {
+        setStatus("Enviando foto...");
+        const timestamp = Date.now();
+        const filePath = `feed/${timestamp}-${file.name}`;
+        const storageRef = storage.ref(filePath);
+        const uploadTask = storageRef.put(file);
+
+        uploadTask.on(
+          "state_changed",
+          () => {},
+          (err) => {
+            console.error("Erro no upload:", err);
+            setStatus("Erro no upload da foto.");
+          },
+          async () => {
+            const downloadUrl = await uploadTask.snapshot.ref.getDownloadURL();
+
+            await db.collection(POSTS_COLLECTION).add({
+              imageUrl: downloadUrl,
+              likes: 0,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+
+            setStatus("Foto enviada com sucesso!");
+            await loadPosts();
+          }
+        );
+      } catch (err) {
+        console.error("Erro geral:", err);
+        setStatus("Não foi possível enviar a foto.");
+      }
     });
 
-    // Carrega o feed ao abrir a página
-    loadPhotos();
+    loadPosts();
   </script>
 </body>
 </html>
