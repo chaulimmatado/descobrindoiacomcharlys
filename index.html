@@ -1,156 +1,476 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Teste de Ray Marching (fix)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ecos do Assovio</title>
   <style>
-    body { margin: 0; background: #000; position: fixed; width: 100%; height: 100%; overflow: hidden; }
-    #info { position: absolute; top: 10px; left: 10px; padding: 8px 12px; background: rgba(0,0,0,0.8); color: #FFF; font: 12px sans-serif; }
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: #050610;
+      overflow: hidden;
+      font-family: monospace;
+    }
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+      image-rendering: pixelated;
+      background: radial-gradient(circle at center, #11152a 0%, #050610 60%, #020307 100%);
+    }
+    #ui {
+      position: fixed;
+      top: 12px;
+      left: 12px;
+      color: #d8e0ff;
+      font-size: 14px;
+      line-height: 1.4;
+      text-shadow: 0 0 6px rgba(120,160,255,.35);
+      user-select: none;
+      pointer-events: none;
+    }
+    #msg {
+      position: fixed;
+      bottom: 14px;
+      left: 12px;
+      color: #b9c3ff;
+      font-size: 13px;
+      text-shadow: 0 0 6px rgba(120,160,255,.35);
+      max-width: 760px;
+    }
+    #startOverlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,.72);
+      color: #fff;
+      z-index: 10;
+      text-align: center;
+    }
+    #startOverlay button {
+      background: #6a7dff;
+      border: 0;
+      color: white;
+      padding: 14px 20px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 0 25px rgba(106,125,255,.3);
+    }
   </style>
 </head>
 <body>
-  <canvas id="canvas" style="display: block;"></canvas>
-  <div id="info">FPS: --</div>
+<div id="startOverlay">
+  <div>
+    <h1 style="margin:0 0 12px 0;">Ecos do Assovio</h1>
+    <p style="margin:0 0 18px 0;">Clique para ativar o áudio do jogo.</p>
+    <button id="startBtn">Iniciar</button>
+  </div>
+</div>
 
-  <script type="glsl" id="frag">
-    precision mediump float;  /* evita problemas em alguns dispositivos */
+<div id="ui"></div>
+<div id="msg">WASD/Setas para mover, Espaço para pular, Shift para dash, E para assovio curto, J grave, K agudo, L contínuo, F salvar.</div>
+<canvas id="game"></canvas>
 
-    uniform vec2 uResolution;
-    uniform float uTime;
+<script>
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const ui = document.getElementById('ui');
+const msg = document.getElementById('msg');
+const startOverlay = document.getElementById('startOverlay');
+const startBtn = document.getElementById('startBtn');
 
-    vec3 rayDirection(float fov, vec2 size, vec2 fragCoord) {
-      vec2 xy = fragCoord - size * 0.5;
-      float z = size.y / 2.0;  /* simplificação para evitar radians */
-      return normalize(vec3(xy, -z));
+let W = innerWidth, H = innerHeight;
+function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+addEventListener('resize', resize); resize();
+
+const keys = {};
+addEventListener('keydown', e => {
+  keys[e.key.toLowerCase()] = true;
+  if ([" ","arrowup","arrowdown","arrowleft","arrowright"].includes(e.key.toLowerCase())) e.preventDefault();
+});
+addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+let audioCtx, masterGain;
+function startAudio() {
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.12;
+  masterGain.connect(audioCtx.destination);
+}
+
+function beep(freq=440, duration=0.12, type='sine', gain=0.15) {
+  if (!audioCtx) return;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  g.gain.value = gain;
+  osc.connect(g);
+  g.connect(masterGain);
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+  g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+}
+
+function noisePulse(duration=0.18, gain=0.12) {
+  if (!audioCtx) return;
+  const bufferSize = audioCtx.sampleRate * duration;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
+  const src = audioCtx.createBufferSource();
+  const g = audioCtx.createGain();
+  src.buffer = buffer;
+  src.connect(g);
+  g.connect(masterGain);
+  g.gain.value = gain;
+  src.start();
+}
+
+const world = {
+  gravity: 0.45,
+  platforms: [
+    {x:0,y:H-60,w:W,h:60,type:'ground'},
+    {x:120,y:H-170,w:220,h:20,type:'stone'},
+    {x:430,y:H-250,w:180,h:20,type:'metal'},
+    {x:720,y:H-330,w:220,h:20,type:'stone'},
+    {x:1020,y:H-210,w:220,h:20,type:'metal'},
+    {x:1350,y:H-280,w:250,h:20,type:'stone'},
+    {x:1720,y:H-180,w:230,h:20,type:'metal'},
+  ],
+  ladders: [
+    {x:340,y:H-250,w:24,h:80},
+    {x:880,y:H-330,w:24,h:120},
+    {x:1510,y:H-280,w:24,h:100},
+  ],
+  echoOrbs: [
+    {x:520,y:H-280,r:10,collected:false},
+    {x:1100,y:H-240,r:10,collected:false},
+    {x:1820,y:H-210,r:10,collected:false},
+  ],
+  savePoint: {x:240,y:H-220,w:28,h:40},
+  zone: {x:0,y:0,w:2200,h:H}
+};
+
+const player = {
+  x: 60, y: H-120, w: 22, h: 32,
+  vx: 0, vy: 0,
+  speed: 2.2, jump: 8.5, onGround: false,
+  facing: 1, dashTimer: 0, dashCooldown: 0,
+  onLadder: false, echoPower: 1, saved: false
+};
+
+const enemies = [
+  {x: 650, y:H-292, w:24, h:24, vx:0.5, vy:0, alert:0, type:'blind'},
+  {x: 1260, y:H-252, w:24, h:24, vx:-0.4, vy:0, alert:0, type:'smoke'},
+  {x: 1680, y:H-212, w:26, h:26, vx:0.3, vy:0, alert:0, type:'machine'},
+];
+
+const echoes = [];
+let cameraX = 0;
+let audioUnlocked = false;
+
+function rects(a,b) {
+  return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+}
+
+function emitEcho(x, y, mode) {
+  const cfg = {
+    short: {r: 70, color:'#86a7ff', sound:()=>beep(660,0.08,'triangle',0.08)},
+    grave: {r: 90, color:'#6a5cff', sound:()=>{beep(130,0.16,'sine',0.16); noisePulse(0.12,0.06);}},
+    agudo: {r: 110, color:'#c7f0ff', sound:()=>beep(1240,0.06,'sine',0.08)},
+    continuo: {r: 55, color:'#9affd9', sound:()=>beep(220,0.3,'sine',0.05)}
+  }[mode];
+  if (!cfg) return;
+  cfg.sound();
+  echoes.push({x,y,r:12,max:cfg.r,color:cfg.color,life:1,mode});
+  if (mode === 'grave') {
+    enemies.forEach(e => {
+      const dx = (e.x + e.w/2) - x;
+      const dy = (e.y + e.h/2) - y;
+      const d = Math.hypot(dx,dy);
+      if (d < cfg.r) { e.vx += dx > 0 ? 1.2 : -1.2; e.alert = 1; }
+    });
+  }
+  if (mode === 'agudo') {
+    world.echoOrbs.forEach(o => {
+      const d = Math.hypot((o.x-x),(o.y-y));
+      if (d < cfg.r) o.highlight = 1;
+    });
+  }
+  if (mode === 'continuo') {
+    player.vx *= 0.88;
+    player.vy *= 0.88;
+  }
+}
+
+function saveGame() {
+  localStorage.setItem('ecos_do_assovio_save', JSON.stringify({
+    x: player.x, y: player.y, echoPower: player.echoPower,
+    collected: world.echoOrbs.map(o=>o.collected)
+  }));
+  msg.textContent = 'Jogo salvo.';
+}
+function loadGame() {
+  const data = localStorage.getItem('ecos_do_assovio_save');
+  if (!data) return;
+  try {
+    const s = JSON.parse(data);
+    player.x = s.x ?? player.x;
+    player.y = s.y ?? player.y;
+    player.echoPower = s.echoPower ?? 1;
+    if (Array.isArray(s.collected)) world.echoOrbs.forEach((o,i)=>o.collected = !!s.collected[i]);
+    msg.textContent = 'Save carregado.';
+  } catch {}
+}
+
+startBtn.onclick = async () => {
+  startAudio();
+  audioUnlocked = true;
+  if (audioCtx.state === 'suspended') await audioCtx.resume();
+  startOverlay.style.display = 'none';
+  loadGame();
+  beep(330,0.1,'sine',0.03);
+};
+
+function updatePlayer() {
+  const left = keys['a'] || keys['arrowleft'];
+  const right = keys['d'] || keys['arrowright'];
+  const up = keys['w'] || keys['arrowup'];
+  const down = keys['s'] || keys['arrowdown'];
+  const jump = keys[' '];
+  const dash = keys['shift'];
+  const shortWhistle = keys['e'];
+  const grave = keys['j'];
+  const sharp = keys['k'];
+  const continuous = keys['l'];
+  const save = keys['f'];
+
+  if (save) { saveGame(); keys['f'] = false; }
+
+  player.onLadder = false;
+  world.ladders.forEach(l => {
+    if (rects(player,l) && (up || down)) player.onLadder = true;
+  });
+
+  if (dash && player.dashCooldown <= 0) {
+    player.dashTimer = 12;
+    player.dashCooldown = 40;
+    player.vx = player.facing * 7;
+    beep(520,0.05,'square',0.04);
+  }
+
+  if (shortWhistle) { emitEcho(player.x + player.w/2, player.y + player.h/2, 'short'); keys['e'] = false; }
+  if (grave) { emitEcho(player.x + player.w/2, player.y + player.h/2, 'grave'); keys['j'] = false; }
+  if (sharp) { emitEcho(player.x + player.w/2, player.y + player.h/2, 'agudo'); keys['k'] = false; }
+  if (continuous) {
+    emitEcho(player.x + player.w/2, player.y + player.h/2, 'continuo');
+  }
+
+  if (player.dashTimer > 0) player.dashTimer--;
+
+  if (!player.onLadder) {
+    if (left) { player.vx -= 0.35; player.facing = -1; }
+    if (right) { player.vx += 0.35; player.facing = 1; }
+    player.vx *= 0.92;
+    player.vy += world.gravity;
+    if (jump && player.onGround) {
+      player.vy = -player.jump;
+      player.onGround = false;
+      beep(260,0.05,'sine',0.025);
+    }
+  } else {
+    player.vx *= 0.75;
+    player.vy = 0;
+    if (up) player.y -= 2.2;
+    if (down) player.y += 2.2;
+  }
+
+  player.x += player.vx;
+  player.y += player.vy;
+
+  player.onGround = false;
+  world.platforms.forEach(p => {
+    if (rects(player,p) && player.vy >= 0 && player.y + player.h - player.vy <= p.y + 4) {
+      player.y = p.y - player.h;
+      player.vy = 0;
+      player.onGround = true;
+    }
+  });
+
+  if (player.y > H + 200) {
+    player.x = 60; player.y = H-120; player.vx = 0; player.vy = 0;
+  }
+
+  world.echoOrbs.forEach(o => {
+    if (!o.collected && Math.hypot((player.x+player.w/2)-o.x,(player.y+player.h/2)-o.y) < 22) {
+      o.collected = true;
+      player.echoPower++;
+      beep(880,0.12,'triangle',0.08);
+      msg.textContent = 'Fragmento sonoro recuperado.';
+    }
+  });
+}
+
+function updateEnemies() {
+  enemies.forEach(e => {
+    const dx = (player.x + player.w/2) - (e.x + e.w/2);
+    const dy = (player.y + player.h/2) - (e.y + e.h/2);
+    const dist = Math.hypot(dx,dy);
+
+    let hearing = 0;
+    echoes.forEach(ec => {
+      const ed = Math.hypot((e.x+e.w/2)-ec.x, (e.y+e.h/2)-ec.y);
+      if (ed < ec.max) hearing += (ec.max - ed) / ec.max;
+    });
+
+    if (hearing > 0.2) {
+      e.alert = Math.min(1, e.alert + 0.06);
+      e.vx += dx > 0 ? 0.06 : -0.06;
+    } else {
+      e.alert = Math.max(0, e.alert - 0.01);
+      e.vx *= 0.98;
+      e.vx += (Math.random() < 0.01 ? (Math.random()-.5)*0.5 : 0);
     }
 
-    float sphere(vec3 p, float r) {
-      return length(p) - r;
-    }
+    e.x += e.vx;
+    e.y += e.vy;
 
-    float map(vec3 p) {
-      return sphere(p - vec3(sin(uTime)*3.0, 0.0, 0.0), 2.0);
-    }
-
-    vec3 calcNormal(vec3 p) {
-      const float eps = 0.001;
-      return normalize(vec3(
-        map(p + vec3(eps,0,0)) - map(p - vec3(eps,0,0)),
-        map(p + vec3(0,eps,0)) - map(p - vec3(0,eps,0)),
-        map(p + vec3(0,0,eps)) - map(p - vec3(0,0,eps))
-      ));
-    }
-
-    vec3 shade(vec3 ro, vec3 rd, float t) {
-      vec3 p = ro + rd * t;
-      vec3 light = normalize(vec3(1.0, 1.0, 1.0));
-      vec3 normal = calcNormal(p);
-      float diff = max(0.0, dot(normal, light));
-      vec3 col = 0.5 + 0.5 * sin(p.x + uTime) * 0.5;
-      col *= diff * 0.8 + 0.2;
-      return col;
-    }
-
-    void main() {
-      vec2 uv = gl_FragCoord.xy / uResolution.xy;
-      vec3 ro = vec3(0.0, 0.0, -5.0);
-      vec3 rd = rayDirection(60.0, uResolution, gl_FragCoord.xy);
-
-      float t = 0.0;
-      for (int i = 0; i < 128; i ++) {
-        vec3 p = ro + rd * t;
-        float d = map(p);
-        if (d < 0.001 || t > 50.0) break;
-        t += d * 0.5;
+    world.platforms.forEach(p => {
+      if (rects(e,p)) {
+        if (e.y + e.h - e.vy <= p.y + 4) {
+          e.y = p.y - e.h;
+          e.vy = 0;
+        }
       }
+    });
 
-      vec3 color = t < 50.0 ? shade(ro, rd, t) : vec3(0.0);
-
-      gl_FragColor = vec4(color, 1.0);
+    if (dist < 22 && hearing > 0.3) {
+      player.x = 60; player.y = H-120;
+      player.vx = 0; player.vy = 0;
+      msg.textContent = 'Você foi detectado pelo som.';
+      beep(90,0.2,'sawtooth',0.06);
     }
-  </script>
+  });
+}
 
-  <script>
-    const canvas = document.getElementById("canvas");
-    const info = document.getElementById("info");
-    const gl = canvas.getContext("webgl");
+function updateEchoes() {
+  for (let i=echoes.length-1;i>=0;i--) {
+    echoes[i].r += 4.5;
+    echoes[i].life -= 0.02;
+    if (echoes[i].life <= 0) echoes.splice(i,1);
+  }
+  world.echoOrbs.forEach(o => o.highlight = Math.max(0, (o.highlight||0) - 0.03));
+}
 
-    if (!gl) {
-      alert("WebGL não suportado ou desativado.\nUse Chrome/Edge/Firefox e verifique F12 → Console.");
-      throw "WebGL not supported";
-    }
+function drawBackground() {
+  ctx.fillStyle = '#050610';
+  ctx.fillRect(0,0,W,H);
 
-    const vsCode = `
-      attribute vec2 position;
-      void main() {
-        gl_Position = vec4(position, 0.0, 1.0);
-      }
-    `;
-    const fsCode = document.getElementById("frag").textContent;
+  cameraX = Math.max(0, Math.min(player.x - W/2, world.zone.w - W));
 
-    const program = gl.createProgram();
+  for (let i=0;i<60;i++) {
+    const x = (i*173 - cameraX*0.2) % (W+200) - 100;
+    const y = (i*97) % H;
+    ctx.fillStyle = `rgba(120,160,255,${0.03 + (i%7)*0.004})`;
+    ctx.fillRect(x, y, 2, 2);
+  }
 
-    const vShader = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vShader, vsCode);
-    gl.compileShader(vShader);
-    if (!gl.getShaderParameter(vShader, gl.COMPILE_STATUS)) {
-      console.error("Vertex shader compile error:", gl.getShaderInfoLog(vShader));
-    }
-    gl.attachShader(program, vShader);
+  ctx.fillStyle = 'rgba(100,120,180,0.10)';
+  ctx.fillRect(-cameraX*0.1, H-120, world.zone.w, 120);
+}
 
-    const fShader = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fShader, fsCode);
-    gl.compileShader(fShader);
-    if (!gl.getShaderParameter(fShader, gl.COMPILE_STATUS)) {
-      console.error("Fragment shader compile error:", gl.getShaderInfoLog(fShader));
-    }
-    gl.attachShader(program, fShader);
+function drawWorld() {
+  ctx.save();
+  ctx.translate(-cameraX, 0);
 
-    gl.linkProgram(program);
-    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-      console.error("Program link error:", gl.getProgramInfoLog(program));
-    }
-    gl.useProgram(program);
+  world.platforms.forEach(p => {
+    if (p.type === 'metal') ctx.fillStyle = '#3f4f77';
+    else if (p.type === 'stone') ctx.fillStyle = '#24314a';
+    else ctx.fillStyle = '#1b2233';
+    ctx.fillRect(p.x, p.y, p.w, p.h);
+    ctx.fillStyle = 'rgba(160,200,255,0.08)';
+    ctx.fillRect(p.x, p.y, p.w, 3);
+  });
 
-    const verts = new Float32Array([-1,-1, 1,-1, -1,1, 1,1]);
-    const vbo = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-    gl.bufferData(gl.ARRAY_BUFFER, verts, gl.STATIC_DRAW);
+  world.ladders.forEach(l => {
+    ctx.fillStyle = 'rgba(170,190,255,0.35)';
+    ctx.fillRect(l.x, l.y, l.w, l.h);
+  });
 
-    const posLoc = gl.getAttribLocation(program, "position");
-    gl.enableVertexAttribArray(posLoc);
-    gl.vertexAttribPointer(posLoc, 2, gl.FLOAT, false, 0, 0);
+  world.savePoint && (() => {
+    const s = world.savePoint;
+    ctx.fillStyle = '#6a7dff';
+    ctx.fillRect(s.x, s.y, s.w, s.h);
+    ctx.fillStyle = '#c7f0ff';
+    ctx.fillRect(s.x+6, s.y+8, 16, 4);
+  })();
 
-    const resolutionLoc = gl.getUniformLocation(program, "uResolution");
-    const timeLoc = gl.getUniformLocation(program, "uTime");
+  world.echoOrbs.forEach(o => {
+    if (o.collected) return;
+    ctx.beginPath();
+    ctx.fillStyle = o.highlight ? '#d9ffff' : '#8aa4ff';
+    ctx.arc(o.x, o.y, o.r, 0, Math.PI*2);
+    ctx.fill();
+  });
 
-    let frameCount = 0;
-    let lastTime = 0;
-    let fps = 0;
+  enemies.forEach(e => {
+    ctx.fillStyle = e.alert > 0.5 ? '#ff7799' : '#a1a8c8';
+    ctx.fillRect(e.x, e.y, e.w, e.h);
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillRect(e.x+4, e.y+5, e.w-8, 3);
+  });
 
-    function animate(now) {
-      now *= 0.001;
-      frameCount++;
-      if (now - lastTime >= 1.0) {
-        fps = frameCount;
-        frameCount = 0;
-        lastTime = now;
-        info.textContent = `FPS: ${fps}`;
-      }
+  echoes.forEach(ec => {
+    ctx.strokeStyle = ec.color;
+    ctx.globalAlpha = ec.life;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(ec.x, ec.y, ec.r, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.globalAlpha = 1;
+  });
 
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      gl.viewport(0, 0, canvas.width, canvas.height);
-      gl.uniform2f(resolutionLoc, canvas.width, canvas.height);
-      gl.uniform1f(timeLoc, now);
+  ctx.fillStyle = '#d7e1ff';
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+  ctx.fillStyle = '#7a8cff';
+  ctx.fillRect(player.x + (player.facing===1 ? 16 : 2), player.y + 8, 4, 4);
 
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  ctx.restore();
+}
 
-      requestAnimationFrame(animate);
-    }
+function drawFog() {
+  ctx.fillStyle = 'rgba(90,110,160,0.05)';
+  for (let i=0;i<8;i++) {
+    ctx.beginPath();
+    const x = (i*220 - (cameraX*0.5)) % (W+300) - 150;
+    const y = 80 + i*70;
+    ctx.ellipse(x, y, 180, 40, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+}
 
-    animate(0);
-  </script>
+function loop() {
+  updatePlayer();
+  updateEnemies();
+  updateEchoes();
+  drawBackground();
+  drawWorld();
+  drawFog();
+
+  ui.innerHTML = `
+    <div>Fragmentos: ${player.echoPower-1}</div>
+    <div>Posição: ${Math.floor(player.x)}, ${Math.floor(player.y)}</div>
+    <div>Som: ${audioUnlocked ? 'ativo' : 'inativo'}</div>
+  `;
+  requestAnimationFrame(loop);
+}
+loop();
+</script>
 </body>
 </html>
