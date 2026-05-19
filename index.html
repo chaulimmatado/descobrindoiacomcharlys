@@ -263,7 +263,8 @@
             opacity: 1;
             pointer-events: auto;
         }
-        
+
+        /* CORREÇÕES PARA MOBILE */
         @media (max-width: 768px) {
             .container {
                 padding: 25px;
@@ -276,15 +277,30 @@
             h2 {
                 font-size: 1.4em;
             }
-            
+
+            /* Escala reduzida para não cortar conteúdo */
             .step:hover, .step.active {
-                transform: scale(1.1) translateX(5px);
+                transform: scale(1.05) translateX(5px);
+            }
+
+            /* Evita overflow visual em telas pequenas */
+            .step {
+                overflow: hidden;
             }
             
             .dev-badge {
                 font-size: 0.9em;
                 padding: 8px 18px;
                 letter-spacing: 2px;
+            }
+        }
+
+        /* Respeita preferencia de redução de movimento */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                transition: none !important;
+                animation: none !important;
+                transform: none !important;
             }
         }
     </style>
@@ -302,10 +318,10 @@
             <div class="step" onclick="this.classList.toggle('active')">
                 <h3>1. Definição do Objetivo</h3>
                 <div class="explanation">
-                    <p>No início do projeto, deixei claro para a inteligência artificial exatamente o que eu quería desenvolver.</p>
+                    <p>No início do projeto, deixei claro para a inteligência artificial exatamente o que eu queria desenvolver.</p>
                     <p>Utilizei prompts detalhados, estratégicos e bem estruturados para explicar como deveria ser o site, qual seria seu objetivo e como a experiência visual deveria funcionar.</p>
                     <p>Quanto mais específico eu fui nas instruções, melhores foram os resultados gerados pela IA.</p>
-                    <p>Essa etapa foi essential para garantir que o projeto tivesse identidade própria e seguisse exatamente a ideia que eu imaginava.</p>
+                    <p>Essa etapa foi essencial para garantir que o projeto tivesse identidade própria e seguisse exatamente a ideia que eu imaginava.</p>
                 </div>
             </div>
 
@@ -373,6 +389,7 @@
         const overlay = document.querySelector('.overlay');
         
         steps.forEach(step => {
+            // Mouse enter (desktop)
             step.addEventListener('mouseenter', () => {
                 overlay.classList.add('show');
             });
@@ -383,15 +400,20 @@
                 }
             });
             
+            // Clique (funciona em touch e desktop)
             step.addEventListener('click', () => {
+                const isActive = step.classList.contains('active');
+                
                 steps.forEach(s => {
                     if (s !== step) s.classList.remove('active');
                 });
                 
-                if (step.classList.contains('active')) {
-                    overlay.classList.add('show');
-                } else {
+                if (isActive) {
+                    step.classList.remove('active');
                     overlay.classList.remove('show');
+                } else {
+                    step.classList.add('active');
+                    overlay.classList.add('show');
                 }
             });
         });
