@@ -384,46 +384,55 @@
         </footer>
     </div>
 
-    <script>
-        const steps = document.querySelectorAll('.step');
-        const overlay = document.querySelector('.overlay');
-        
-        steps.forEach(step => {
-            // Mouse enter (desktop)
-            step.addEventListener('mouseenter', () => {
-                overlay.classList.add('show');
-            });
-            
-            step.addEventListener('mouseleave', () => {
-                if (!step.classList.contains('active')) {
-                    overlay.classList.remove('show');
-                }
-            });
-            
-            // Clique (funciona em touch e desktop)
-            step.addEventListener('click', () => {
-                const isActive = step.classList.contains('active');
-                
-                steps.forEach(s => {
-                    if (s !== step) s.classList.remove('active');
-                });
-                
-                if (isActive) {
-                    step.classList.remove('active');
-                    overlay.classList.remove('show');
-                } else {
-                    step.classList.add('active');
-                    overlay.classList.add('show');
-                }
-            });
-        });
-        
-        overlay.addEventListener('click', () => {
-            steps.forEach(step => {
-                step.classList.remove('active');
-            });
-            overlay.classList.remove('show');
-        });
-    </script>
+   <script>
+  const steps = document.querySelectorAll('.step');
+  const overlay = document.querySelector('.overlay');
+
+  // Abre/fecha ao clicar no passo
+  steps.forEach(step => {
+    step.addEventListener('click', e => {
+      const wasActive = step.classList.contains('active');
+
+      // Fecha todos primeiro
+      steps.forEach(s => s.classList.remove('active'));
+      overlay.classList.remove('show');
+
+      // Se não estava ativo, abre este
+      if (!wasActive) {
+        step.classList.add('active');
+        overlay.classList.add('show');
+      }
+      // Se já estava ativo, ele fica fechado (já foi removido acima)
+    });
+
+    // Overlay no hover (só desktop)
+    step.addEventListener('mouseenter', () => {
+      if (!step.classList.contains('active')) {
+        overlay.classList.add('show');
+      }
+    });
+
+    step.addEventListener('mouseleave', () => {
+      if (!step.classList.contains('active')) {
+        overlay.classList.remove('show');
+      }
+    });
+  });
+
+  // Clicar fora do container fecha todos os passos
+  document.addEventListener('click', e => {
+    const container = document.querySelector('.container');
+    if (!container.contains(e.target)) {
+      steps.forEach(s => s.classList.remove('active'));
+      overlay.classList.remove('show');
+    }
+  });
+
+  // Se clicar no overlay, também fecha (apenas segurança)
+  overlay.addEventListener('click', () => {
+    steps.forEach(s => s.classList.remove('active'));
+    overlay.classList.remove('show');
+  });
+</script>
 </body>
 </html>
